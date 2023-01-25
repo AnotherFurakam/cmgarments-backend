@@ -7,7 +7,6 @@ import {
   Delete,
   Put,
   Query,
-  DefaultValuePipe,
 } from '@nestjs/common';
 import { BrandService } from './brand.service';
 import { CreateBrandDto } from './dto/create-brand.dto';
