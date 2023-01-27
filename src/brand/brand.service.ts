@@ -114,7 +114,7 @@ export class BrandService {
   async update(id: string, updateBrandDto: UpdateBrandDto): Promise<Brand> {
     //Obtenemos el brand que deseamos actualizar
     const brandToUpdate = await this.brandRepository.findOne({
-      where: { id_brand: id },
+      where: { id_brand: id, isDelete: false },
     });
     //Si el brand no fue encontrado devolveremos un error indicando que este no fue encontrado
     if (!brandToUpdate)
@@ -134,7 +134,7 @@ export class BrandService {
   async remove(id: string) {
     //Buscamos el brand que queramos eliminar mediante su id
     const brandToRemove = await this.brandRepository.findOne({
-      where: { id_brand: id },
+      where: { id_brand: id, isDelete: false },
     });
 
     // Si el brando no fue encontrado o su propiedad isDelete es true devolvemos un error
