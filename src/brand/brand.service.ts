@@ -6,7 +6,7 @@ import { Brand } from 'src/model/brand.entity';
 import { Repository } from 'typeorm';
 import { BrandPaginationQueryDto } from './dto/brand-pagination-query.dto';
 import { BrandPaginationResponseDto } from './dto/brand-pagination-response.dto';
-import { plainToClass } from 'class-transformer';
+import { plainToInstance } from 'class-transformer';
 import { GetBrandDto } from './dto/get-brand.dto';
 
 @Injectable()
@@ -74,7 +74,7 @@ export class BrandService {
     });
 
     //Mapeamos los registros hacia la clase dto previamente configurada
-    const data = brandList.map((b: Brand) => plainToClass(GetBrandDto, b));
+    const data = brandList.map((b: Brand) => plainToInstance(GetBrandDto, b));
 
     //Retornamos los datos requeridos en el DTO de respuesta establecido.
     //para saber si la página previa o siguiente existe hacemos el siguiente cálculo
@@ -107,7 +107,7 @@ export class BrandService {
       );
 
     //Si se encontró el brand retornamos lo encontrado
-    return plainToClass(GetBrandDto, findBrand);
+    return plainToInstance(GetBrandDto, findBrand);
   }
 
   //* Método para actualizar una marca de producto (brand) mediante su id(uuid)
