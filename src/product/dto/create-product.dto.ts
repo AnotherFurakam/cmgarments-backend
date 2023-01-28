@@ -55,7 +55,7 @@ export class CreateProductDto{
     stock: number;
 
     @IsNotEmpty()
-    @IsEnum(['Masculino', 'Femenino'])
+    @IsEnum(['Masculino', 'Femenino', null, ''])
     @ApiProperty({
         description: 'tipo de genero del producto al registrar',
         type: String,
@@ -73,7 +73,7 @@ export class CreateProductDto{
     })
     description: string;
 
-    @IsEnum(['Habilitado', 'Desabilitado'])
+    @IsEnum(['Habilitado', 'Desabilitado', null, ''])
     @ApiProperty({
         description: 'tipo de estado del producto al registrar',
         type: String,

@@ -2,6 +2,9 @@ import { Exclude, Expose } from 'class-transformer';
 @Exclude()
 export class GetProductDto {
     @Expose()
+    id_product: string;
+
+    @Expose()
     name: string;
 
     @Expose()

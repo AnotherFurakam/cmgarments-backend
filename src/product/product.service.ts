@@ -151,6 +151,7 @@ export class ProductService{
           HttpStatus.NOT_FOUND,
         );
 
+      //en caso de que el stock sea 0, el producto de deshabilitara
       if(updateProductDto.stock==0)
       {
         updateProductDto.stale='Desabilitado'
