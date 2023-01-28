@@ -1,4 +1,4 @@
-import { IsDecimal, IsEnum, IsInt, isInt, IsNotEmpty, IsString, MaxLength, MinLength } from 'class-validator';
+import { IsDecimal, IsEnum, IsInt, isInt, IsNotEmpty, IsString, MaxLength, Min, MinLength } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 export class CreateProductDto{
     @IsNotEmpty()
@@ -38,6 +38,7 @@ export class CreateProductDto{
     color: string;
 
     @IsNotEmpty()
+    @Min(0)
     @ApiProperty({
         description: 'precio del producto al registrar',
         type: Number,
@@ -46,6 +47,7 @@ export class CreateProductDto{
 
     @IsNotEmpty()
     @IsInt()
+    @Min(0)
     @ApiProperty({
         description: 'precio del producto al registrar',
         type: Number,
