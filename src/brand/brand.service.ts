@@ -140,7 +140,7 @@ export class BrandService {
     // Si el brando no fue encontrado o su propiedad isDelete es true devolvemos un error
     if (!brandToRemove || brandToRemove.isDelete)
       throw new HttpException(
-        `The brand with id '${id} not found'`,
+        `The product with id '${id} not found or has it already been removed'`,
         HttpStatus.NOT_FOUND,
       );
     //En caso no cumpla con las condiciones anteriores actualizamos la propiedad isDelete a true
