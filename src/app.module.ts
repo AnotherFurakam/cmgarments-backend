@@ -4,6 +4,7 @@ import { AppService } from './app.service';
 import { config } from 'dotenv';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { BrandModule } from './brand/brand.module';
+import { CategoryModule } from './category/category.module';
 
 config();
 @Module({
@@ -19,6 +20,7 @@ config();
       synchronize: true,
     }),
     BrandModule,
+    CategoryModule,
   ],
   controllers: [AppController],
   providers: [AppService],
