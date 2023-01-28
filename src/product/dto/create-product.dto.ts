@@ -71,8 +71,6 @@ export class CreateProductDto{
     })
     description: string;
 
-    @IsNotEmpty()
-    @IsString()
     @IsEnum(['Habilitado', 'Desabilitado'])
     @ApiProperty({
         description: 'tipo de estado del producto al registrar',

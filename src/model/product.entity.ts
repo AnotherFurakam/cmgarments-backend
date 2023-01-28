@@ -1,4 +1,4 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, PrimaryGeneratedColumn, Unique } from 'typeorm';
 import { Type } from 'class-transformer';
 @Entity()
 export class Product{
@@ -26,7 +26,7 @@ export class Product{
     @Column({ type: 'varchar', length: 1000 })
     description: string;
 
-    @Column({ type: 'varchar' })
+    @Column({ default: 'Habilitado', type: 'varchar' })
     stale: string;
 
     @Column({ type: 'varchar' })

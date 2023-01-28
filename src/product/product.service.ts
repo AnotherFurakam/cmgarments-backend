@@ -49,6 +49,11 @@ export class ProductService{
             HttpStatus.CONFLICT,
         );
 
+        //si el stock resulta ser 0, el estado pasaria a ser Desabilitado
+        if(createProductDto.stock==0){
+          createProductDto.stale= 'Desabilitado'
+        }
+
         //el nombre de la marca se cambiara por el id de la marca
         createProductDto.brand = brandexist.id_brand;
         //el nombre de la categoria se cambiara por el id de la categoria
@@ -63,7 +68,7 @@ export class ProductService{
     //metodo para autogenerar un sku dependiendo de las propiedades
     private generateSKU(brand: string, category: string, color: string, size: string, name: string, gender: string): string {
         let result = "CMG" + "-" + brand.substring(0,3) + "-" + category.substring(0,3) + "-" + color.substring(0,3) + "-" + size.substring(0,3)
-        + "-" + name.substring(0,3) + "-" + name.substring(name.length-3) + "-" + gender.substring(0,3); 
+        +  "-" + size.substring(size.length-3) + "-" + name.substring(0,3) + "-" + name.substring(name.length-3) + "-" + gender.substring(0,3); 
         return result;
     }
     //? Obtener todas los Productos (GET)
@@ -145,6 +150,11 @@ export class ProductService{
           `Product with id '${id} not found'`,
           HttpStatus.NOT_FOUND,
         );
+
+      if(updateProductDto.stock==0)
+      {
+        updateProductDto.stale='Desabilitado'
+      }
   
        //se procede a buscar si la marca existe
        const brandexist = await this.brandRepository.findOne({
@@ -168,11 +178,15 @@ export class ProductService{
     );
 
     //si el sku ya existe dara un error
-    if (skuexist)
+    if (skuexist && skuexist.id_product!=productToUpdate.id_product)
     throw new HttpException(
        `The product with sku '${updateProductDto.sku}' alredy exist`,
         HttpStatus.CONFLICT,
     );
+
+    if(updateProductDto.stock==0){
+      updateProductDto.stale= 'Desabilitado'
+    }
 
     //el nombre de la marca se cambiara por el id de la marca
     updateProductDto.brand = brandexist.id_brand;
