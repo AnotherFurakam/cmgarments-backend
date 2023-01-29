@@ -11,8 +11,8 @@ import {
 import { BrandService } from './brand.service';
 import { CreateBrandDto } from './dto/create-brand.dto';
 import { UpdateBrandDto } from './dto/update-brand.dto';
-import { BrandPaginationQueryDto } from './dto/brand-pagination-query.dto';
 import { ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { PaginationQueryDto } from 'src/utils/paginate/dto';
 
 @Controller('brand')
 @ApiTags('Brand')
@@ -54,7 +54,7 @@ export class BrandController {
   })
   findAll(
     @Query()
-    paginationQuery: BrandPaginationQueryDto,
+    paginationQuery: PaginationQueryDto,
   ) {
     return this.brandService.findAll(paginationQuery);
   }
