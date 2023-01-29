@@ -1,43 +1,42 @@
-import { Column, Entity, PrimaryGeneratedColumn, Unique } from 'typeorm';
-import { Type } from 'class-transformer';
+import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 @Entity()
-export class Product{
-    @PrimaryGeneratedColumn('uuid')
-    id_product: string;
+export class Product {
+  @PrimaryGeneratedColumn('uuid')
+  id_product: string;
 
-    @Column({ type:'varchar', length: 50 })
-    name: string;
+  @Column({ type: 'varchar', length: 50 })
+  name: string;
 
-    @Column({ type:'varchar', length: 20 })
-    size: string;
+  @Column({ type: 'varchar', length: 20 })
+  size: string;
 
-    @Column({ type:'varchar', length: 30 })
-    color: string;
+  @Column({ type: 'varchar', length: 30 })
+  color: string;
 
-    @Column({type:'decimal',precision:10, scale:2})
-    price: number;
+  @Column({ type: 'decimal', precision: 10, scale: 2 })
+  price: number;
 
-    @Column({type:'integer'})
-    stock: number;
+  @Column({ type: 'integer' })
+  stock: number;
 
-    @Column({ type: 'varchar', length: 20 })
-    gender: string;
+  @Column({ type: 'varchar', length: 20 })
+  gender: string;
 
-    @Column({ type: 'varchar', length: 1000 })
-    description: string;
+  @Column({ type: 'varchar', length: 1000 })
+  description: string;
 
-    @Column({ default: 'Habilitado', type: 'varchar' })
-    stale: string;
+  @Column()
+  state: boolean;
 
-    @Column({ type: 'varchar' })
-    sku: string;
+  @Column({ type: 'varchar' })
+  sku: string;
 
-    @Column({ default: false })
-    isDelete: boolean;
+  @Column({ default: false })
+  isDelete: boolean;
 
-    @Column({ type: 'varchar' })
-    brand: string;
+  @Column({ type: 'varchar' })
+  brand: string;
 
-    @Column({ type:'varchar' })
-    category: string;
+  @Column({ type: 'varchar' })
+  category: string;
 }
