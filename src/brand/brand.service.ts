@@ -1,13 +1,20 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import {
+  ConflictException,
+  HttpException,
+  HttpStatus,
+  Injectable,
+} from '@nestjs/common';
 import { CreateBrandDto } from './dto/create-brand.dto';
 import { UpdateBrandDto } from './dto/update-brand.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Brand } from 'src/model/brand.entity';
 import { Repository } from 'typeorm';
-import { BrandPaginationQueryDto } from './dto/brand-pagination-query.dto';
-import { BrandPaginationResponseDto } from './dto/brand-pagination-response.dto';
 import { plainToInstance } from 'class-transformer';
 import { GetBrandDto } from './dto/get-brand.dto';
+import {
+  PaginationQueryDto,
+  PaginationResponseDto,
+} from 'src/utils/paginate/dto';
 
 @Injectable()
 export class BrandService {
@@ -18,24 +25,21 @@ export class BrandService {
   //*Método para crear una marca de producto (brand)
   //Recibimos como parámetro el dto con los datos correspondientes y validados
   async create(createBrandDto: CreateBrandDto): Promise<Brand> {
-    //Buscamos si el nombre del brand ya fue registrado en la base de datos
-    const brandExist = await this.brandRepository.findOne({
-      where: { name: createBrandDto.name },
-    });
+    try {
+      //Si el brand no fue registrado se procederá a guardar en la base de datos
+      const createBrand = await this.brandRepository.save(createBrandDto);
 
-    //Si el nombre del brand ya fue registrado lanzamos un error que diga que ya fue registrado
-    //El código de estado a utilizar sera el CONFLIC -> para indicar conflictos al registrar
-    if (brandExist)
-      throw new HttpException(
-        `The brand with name '${createBrandDto.name}' alredy exist`,
-        HttpStatus.CONFLICT,
-      );
-
-    //Si el brand no fue registrado se procederá a guardar en la base de datos
-    const createBrand = await this.brandRepository.save(createBrandDto);
-
-    //Retornamos los datos del brand registrado hacia el cliente
-    return createBrand;
+      //Retornamos los datos del brand registrado hacia el cliente
+      return createBrand;
+    } catch (error) {
+      //Duplicate constraint
+      if (error.code === '23505')
+        //El código de estado a utilizar sera el CONFLIC -> para indicar conflictos al registrar
+        //Si el nombre del brand ya fue registrado lanzamos un error que diga que ya fue registrado
+        throw new ConflictException(
+          `La marca con el nombre '${createBrandDto.name}' ya existe.`,
+        );
+    }
   }
 
   //* Método para retornar, de forma páginada, la lista de todas las marcas registradas
@@ -44,7 +48,7 @@ export class BrandService {
   async findAll({
     limit,
     page,
-  }: BrandPaginationQueryDto): Promise<BrandPaginationResponseDto> {
+  }: PaginationQueryDto): Promise<PaginationResponseDto<GetBrandDto[]>> {
     const total = await this.brandRepository.count();
 
     //Math.ceil() -> Sirve para redondear hacia arriba, es decir que cando dividamos el total con el
@@ -54,7 +58,7 @@ export class BrandService {
     //Comprobamos que la página solicitada no sea mayor al número de páginas total calculado
     if (page > pages)
       throw new HttpException(
-        `The page number ${page} don't exist`,
+        `El número de página ${page} no existe.`,
         HttpStatus.BAD_REQUEST,
       );
 
@@ -68,9 +72,6 @@ export class BrandService {
       skip: (page - 1) * limit,
       take: limit,
       order: { createAt: 'ASC' },
-      where: {
-        isDelete: false,
-      },
     });
 
     //Mapeamos los registros hacia la clase dto previamente configurada
@@ -89,20 +90,20 @@ export class BrandService {
       nextPage: page < pages && pages > 0 ? page + 1 : null,
       prevPage: page > 1 ? page - 1 : null,
       data,
-    } as BrandPaginationResponseDto;
+    } as PaginationResponseDto<GetBrandDto[]>;
   }
 
   //* Método para encontrar una marca de producto (brand) no eliminado mediante su id(uuid)
   async findOne(id: string): Promise<GetBrandDto> {
     //Realizamos la busqueda del brand mediante su id en la base de datos
     const findBrand = await this.brandRepository.findOne({
-      where: { id_brand: id, isDelete: false },
+      where: { id_brand: id },
     });
 
     //En caso de que el brand no exista, lanzamos un error con el mesaje y código correspondiente
     if (!findBrand)
       throw new HttpException(
-        `Brand with id '${id}' not found`,
+        `La marca con el id '${id}' no fue encontrada.`,
         HttpStatus.NOT_FOUND,
       );
 
@@ -111,41 +112,46 @@ export class BrandService {
   }
 
   //* Método para actualizar una marca de producto (brand) mediante su id(uuid)
-  async update(id: string, updateBrandDto: UpdateBrandDto): Promise<Brand> {
+  async update(
+    id: string,
+    updateBrandDto: UpdateBrandDto,
+  ): Promise<GetBrandDto> {
     //Obtenemos el brand que deseamos actualizar
     const brandToUpdate = await this.brandRepository.findOne({
-      where: { id_brand: id, isDelete: false },
+      where: { id_brand: id },
     });
     //Si el brand no fue encontrado devolveremos un error indicando que este no fue encontrado
     if (!brandToUpdate)
       throw new HttpException(
-        `Brand with id '${id} not found'`,
+        `La marca con el '${id} no fue econtrada.'`,
         HttpStatus.NOT_FOUND,
       );
 
     //Si el brand fue encontado actualizaremos la info del brand con el dto
     this.brandRepository.merge(brandToUpdate, updateBrandDto);
 
+    const updatedBrand = await this.brandRepository.save(brandToUpdate);
+
     //Por último guardamos el brand y retornamos la info actualizada
-    return await this.brandRepository.save(brandToUpdate);
+    return plainToInstance(GetBrandDto, updatedBrand);
   }
 
   //* Método para eliminar de forma lógica una marca de producto (brand)
   async remove(id: string) {
     //Buscamos el brand que queramos eliminar mediante su id
     const brandToRemove = await this.brandRepository.findOne({
-      where: { id_brand: id, isDelete: false },
+      where: { id_brand: id },
     });
 
     // Si el brando no fue encontrado o su propiedad isDelete es true devolvemos un error
-    if (!brandToRemove || brandToRemove.isDelete)
+    if (!brandToRemove)
       throw new HttpException(
-        `The brand with id '${id} not found'`,
+        `La marca con el id '${id} no fue encontrada.'`,
         HttpStatus.NOT_FOUND,
       );
     //En caso no cumpla con las condiciones anteriores actualizamos la propiedad isDelete a true
-    brandToRemove.isDelete = true;
+    await this.brandRepository.softDelete(id);
     //Por último guardamos y retornamos la data
-    return await this.brandRepository.save(brandToRemove);
+    return plainToInstance(GetBrandDto, brandToRemove);
   }
 }
