@@ -5,6 +5,9 @@ import { config } from 'dotenv';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { BrandModule } from './brand/brand.module';
 import { CategoryModule } from './category/category.module';
+import { AccountModule } from './account/account.module';
+import { EmployeeModule } from './employee/employee.module';
+import { RoleModule } from './role/role.module';
 
 config();
 @Module({
@@ -21,6 +24,9 @@ config();
     }),
     BrandModule,
     CategoryModule,
+    AccountModule,
+    EmployeeModule,
+    RoleModule,
   ],
   controllers: [AppController],
   providers: [AppService],
