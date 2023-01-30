@@ -1,8 +1,10 @@
+import { Product } from './product.entity';
 import {
   Column,
   CreateDateColumn,
   DeleteDateColumn,
   Entity,
+  OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 
@@ -19,4 +21,7 @@ export class Brand {
 
   @DeleteDateColumn()
   delete_at: boolean;
+
+  @OneToMany(type => Product, product => product.id_product)
+  products: Product[];
 }

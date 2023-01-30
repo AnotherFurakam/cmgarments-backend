@@ -15,24 +15,31 @@ import { GetProductDto } from './dto/get-product.dto';
 import { PaginationResponseDto } from '../utils/paginate/dto/pagination-response.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { generateSKU } from 'src/utils/sku/generate-sku';
+import { Category } from '../model/category.entity';
 
 @Injectable()
 export class ProductService {
   constructor(
     @InjectRepository(Product) private productRepository: Repository<Product>,
     @InjectRepository(Brand) private brandRepository: Repository<Brand>,
+    @InjectRepository(Category) private categoryRepository: Repository<Category>,
   ) {}
 
   //*Método para crear un producto (product)
   //Recibimos como parámetro el dto con los datos correspondientes y validados
-  async create(createProductDto: CreateProductDto): Promise<Product> {
+  async create(createProductDto: CreateProductDto): Promise<GetProductDto> {
     //se procede a buscar si la marca existe
     const brandExist = await this.brandRepository.findOne({
       where: { name: createProductDto.brand },
     });
 
+    //se procede a buscar si la categoria existe
+    const categoryExist = await this.categoryRepository.findOne({
+      where: { name: createProductDto.category },
+    });
+
     //se va crear el codigo sku con el metodo generateSKU
-    createProductDto.sku = generateSKU(
+    const skugenerate = generateSKU(
       createProductDto.brand,
       createProductDto.category,
       createProductDto.color,
@@ -43,7 +50,7 @@ export class ProductService {
 
     //se procede a comprobar si el sku ya existe
     const skuExist = await this.productRepository.findOne({
-      where: { sku: createProductDto.sku },
+      where: { sku: skugenerate },
     });
 
     //si la marca no existe dara un error
@@ -53,10 +60,17 @@ export class ProductService {
         HttpStatus.CONFLICT,
       );
 
+    //si la categoria no existe dara un error
+    if (!categoryExist)
+      throw new HttpException(
+        `La categoria '${createProductDto.category}' no existe`,
+        HttpStatus.CONFLICT,
+      );
+
     //si el sku ya existe dara un error
     if (skuExist)
       throw new HttpException(
-        `El producto con el sku '${createProductDto.sku}' ya existe.`,
+        `El producto con el sku '${skugenerate}' ya existe.`,
         HttpStatus.CONFLICT,
       );
 
@@ -68,12 +82,22 @@ export class ProductService {
     //el nombre de la marca se cambiara por el id de la marca
     createProductDto.brand = brandExist.id_brand;
     //el nombre de la categoria se cambiara por el id de la categoria
-    createProductDto.category = `Aqui va el idcategory - '${createProductDto.category}'`;
+    createProductDto.category = categoryExist.id_category;
 
-    //por ultimo ya se crea el producto y se guarda en la database
+    //ya se crea el producto y se guarda en la database
     const createProduct = await this.productRepository.save(createProductDto);
+
+    //buscamos el producto recien creado
+    const findProduct = await this.productRepository.findOne({
+      relations:['brand', 'category'],
+      where: { id_product: createProduct.id_product, delete_at: null },
+    });
+    //reemplazamos el sku por el generado
+    findProduct.sku=skugenerate
+    //actualizamos el producto creado con el sku generado
+    this.productRepository.save(findProduct);
     //Retornamos los datos del producto registrado hacia el cliente
-    return createProduct;
+    return plainToInstance(GetProductDto, findProduct);
   }
 
   //? Obtener todas los Productos (GET)
@@ -94,12 +118,14 @@ export class ProductService {
     // 10 registros de la segunda página.
     // Order: Sirve para indicarle el orden de los datos, en este caso se ordenará de acuerdo al campo createAt
     // de forma ASC -> Ascendente
-    // Where: Le indicamos una condición, en este caso que el campo isDelete sea false
+    // Where: Le indicamos una condición, en este caso que el campo delete_at sea null
     const ProductList = await this.productRepository.find({
+      relations:['brand', 'category'],
       skip: (page - 1) * limit,
       take: limit,
+      order: { create_at: 'ASC' },
       where: {
-        isDelete: false,
+        delete_at: null,
       },
     });
 
@@ -129,7 +155,8 @@ export class ProductService {
   async findOne(id: string): Promise<GetProductDto> {
     //Realizamos la busqueda del brand mediante su id en la base de datos
     const findProduct = await this.productRepository.findOne({
-      where: { id_product: id, isDelete: false },
+      relations:['brand', 'category'],
+      where: { id_product: id, delete_at: null },
     });
 
     //En caso de que el producto no exista, lanzamos un error con el mesaje y código correspondiente
@@ -148,10 +175,10 @@ export class ProductService {
   async update(
     id: string,
     updateProductDto: UpdateProductDto,
-  ): Promise<Product> {
+  ): Promise<GetProductDto> {
     //Obtenemos el producto que deseamos actualizar
     const productToUpdate = await this.productRepository.findOne({
-      where: { id_product: id, isDelete: false },
+      where: { id_product: id, delete_at: null },
     });
     //Si el producto no fue encontrado devolveremos un error indicando que este no fue encontrado
     if (!productToUpdate)
@@ -170,8 +197,13 @@ export class ProductService {
       where: { name: updateProductDto.brand },
     });
 
+    //se procede a buscar si la categoria existe
+    const categoryExist = await this.categoryRepository.findOne({
+      where: { name: updateProductDto.category },
+    });
+
     //se va a actualizar el codigo sku con el metodo generateSKU
-    updateProductDto.sku = generateSKU(
+    const skugenerate = generateSKU(
       updateProductDto.brand,
       updateProductDto.category,
       updateProductDto.color,
@@ -182,7 +214,7 @@ export class ProductService {
 
     //se procede a comprobar si el sku ya existe
     const skuExist = await this.productRepository.findOne({
-      where: { sku: updateProductDto.sku },
+      where: { sku: skugenerate },
     });
 
     //si la marca no existe dara un error
@@ -192,13 +224,21 @@ export class ProductService {
         HttpStatus.CONFLICT,
       );
 
+      //si la categoria no existe dara un error
+    if (!categoryExist)
+    throw new HttpException(
+      `La categoria '${updateProductDto.category}' no existe`,
+      HttpStatus.CONFLICT,
+    );
+
     //si el sku ya existe dara un error
     if (skuExist && skuExist.id_product != productToUpdate.id_product)
       throw new HttpException(
-        `El producto con el sku '${updateProductDto.sku}' ya existe`,
+        `El producto con el sku '${skugenerate}' ya existe`,
         HttpStatus.CONFLICT,
       );
 
+    //si el stock resulta ser 0 se desabilitara el producto
     if (updateProductDto.stock == 0) {
       updateProductDto.state = false;
     }
@@ -206,30 +246,38 @@ export class ProductService {
     //el nombre de la marca se cambiara por el id de la marca
     updateProductDto.brand = brandExist.id_brand;
     //el nombre de la categoria se cambiara por el id de la categoria
-    updateProductDto.category = `Aqui va el idcategory - '${updateProductDto.category}'`;
-    //Si el producto fue encontado y lo demas validado actualizaremos la info del brand con el dto
+    updateProductDto.category = categoryExist.id_category;
+    //actualizamos el sku al generado
+    productToUpdate.sku=skugenerate;
+    //Si el producto fue encontado y lo demas validado actualizaremos la info del product con el dto
     this.productRepository.merge(productToUpdate, updateProductDto);
-
-    //Por último guardamos el producto y retornamos la info actualizada
-    return await this.productRepository.save(productToUpdate);
+    const updatedProduct = await this.productRepository.save(productToUpdate)
+    //por ultimo buscamos el producto recien actualizado
+    const findProduct = await this.productRepository.findOne({
+      relations:['brand', 'category'],
+      where: { id_product: updatedProduct.id_product, delete_at: null },
+    });
+    
+    //Retornamos los datos del producto actualizado hacia el cliente
+    return plainToInstance(GetProductDto, findProduct);
   }
 
   //* Método para eliminar de forma lógica un producto (priduct)
   async remove(id: string) {
     //Buscamos el brand que queramos eliminar mediante su id
     const productToRemove = await this.productRepository.findOne({
-      where: { id_product: id, isDelete: false },
+      relations:['brand', 'category'],
+      where: { id_product: id },
     });
 
-    // Si el producto no fue encontrado o su propiedad isDelete es true devolvemos un error
-    if (!productToRemove || productToRemove.isDelete)
+    // Si el producto no fue encontrado o su propiedad delete_at no es null devolvemos un error
+    if (!productToRemove || productToRemove.delete_at!=null)
       throw new HttpException(
         `El producto con el id '${id} no fue encontrado o ya fue removido.'`,
         HttpStatus.NOT_FOUND,
       );
-    //En caso no cumpla con las condiciones anteriores actualizamos la propiedad isDelete a true
-    productToRemove.isDelete = true;
-    //Por último guardamos y retornamos la data
-    return await this.productRepository.save(productToRemove);
+    await this.productRepository.softDelete(id);
+    //Retornamos los datos del producto registrado hacia el cliente
+    return plainToInstance(GetProductDto, productToRemove);
   }
 }

@@ -1,4 +1,6 @@
-import { Exclude, Expose } from 'class-transformer';
+import { Exclude, Expose, Transform, plainToInstance } from 'class-transformer';
+import { GetBrandDto } from 'src/brand/dto/get-brand.dto';
+import { ResponseCategoryDto } from '../../category/dto/response-category.dto';
 @Exclude()
 export class GetProductDto {
   @Expose()
@@ -31,9 +33,18 @@ export class GetProductDto {
   @Expose()
   sku: string;
 
+  @Transform(({ value }) => plainToInstance(GetBrandDto, value))
   @Expose()
-  brand: string;
+  brand: GetBrandDto;
+
+  @Transform(({ value }) => plainToInstance(ResponseCategoryDto, value))
+  @Expose()
+  category: ResponseCategoryDto;
 
   @Expose()
-  category: string;
+  @Transform(({ value }) => value.toLocaleString('en-GB'), {
+    toPlainOnly: true,
+    toClassOnly: true,
+  })
+  create_at: Date;
 }

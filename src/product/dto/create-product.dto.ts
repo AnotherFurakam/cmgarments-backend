@@ -89,11 +89,6 @@ export class CreateProductDto {
   })
   state: boolean;
 
-  @ApiProperty({
-    description: 'Sku del producto al registrar',
-  })
-  sku: string;
-
   @IsNotEmpty()
   @IsString()
   @ApiProperty({
