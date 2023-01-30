@@ -30,18 +30,18 @@ export class ProductService {
   async create(createProductDto: CreateProductDto): Promise<GetProductDto> {
     //se procede a buscar si la marca existe
     const brandExist = await this.brandRepository.findOne({
-      where: { name: createProductDto.brand },
+      where: { id_brand: createProductDto.id_brand },
     });
 
     //se procede a buscar si la categoria existe
     const categoryExist = await this.categoryRepository.findOne({
-      where: { name: createProductDto.category },
+      where: { id_category: createProductDto.id_category },
     });
 
     //se va crear el codigo sku con el metodo generateSKU
     const skugenerate = generateSKU(
-      createProductDto.brand,
-      createProductDto.category,
+      createProductDto.id_brand,
+      createProductDto.id_category,
       createProductDto.color,
       createProductDto.size,
       createProductDto.name,
@@ -56,14 +56,14 @@ export class ProductService {
     //si la marca no existe dara un error
     if (!brandExist)
       throw new HttpException(
-        `La marca '${createProductDto.brand}' no existe`,
+        `La marca '${createProductDto.id_brand}' no existe`,
         HttpStatus.CONFLICT,
       );
 
     //si la categoria no existe dara un error
     if (!categoryExist)
       throw new HttpException(
-        `La categoria '${createProductDto.category}' no existe`,
+        `La categoria '${createProductDto.id_category}' no existe`,
         HttpStatus.CONFLICT,
       );
 
@@ -79,25 +79,17 @@ export class ProductService {
       createProductDto.state = false;
     }
 
-    //el nombre de la marca se cambiara por el id de la marca
-    createProductDto.brand = brandExist.id_brand;
-    //el nombre de la categoria se cambiara por el id de la categoria
-    createProductDto.category = categoryExist.id_category;
-
     //ya se crea el producto y se guarda en la database
-    const createProduct = await this.productRepository.save(createProductDto);
+    const productToRegist = this.productRepository.create(createProductDto);
+    productToRegist.sku=skugenerate;
+    //guardamos los objetos con respecto al uid del brand
+    productToRegist.brand=brandExist;
+    //guardamos los objetos con respecto al uid del category
+    productToRegist.category=categoryExist;
+    const createProduct = await this.productRepository.save(productToRegist);
 
-    //buscamos el producto recien creado
-    const findProduct = await this.productRepository.findOne({
-      relations:['brand', 'category'],
-      where: { id_product: createProduct.id_product, delete_at: null },
-    });
-    //reemplazamos el sku por el generado
-    findProduct.sku=skugenerate
-    //actualizamos el producto creado con el sku generado
-    this.productRepository.save(findProduct);
     //Retornamos los datos del producto registrado hacia el cliente
-    return plainToInstance(GetProductDto, findProduct);
+    return plainToInstance(GetProductDto, createProduct);
   }
 
   //? Obtener todas los Productos (GET)
@@ -178,6 +170,7 @@ export class ProductService {
   ): Promise<GetProductDto> {
     //Obtenemos el producto que deseamos actualizar
     const productToUpdate = await this.productRepository.findOne({
+      relations:['brand', 'category'],
       where: { id_product: id, delete_at: null },
     });
     //Si el producto no fue encontrado devolveremos un error indicando que este no fue encontrado
@@ -194,18 +187,18 @@ export class ProductService {
 
     //se procede a buscar si la marca existe
     const brandExist = await this.brandRepository.findOne({
-      where: { name: updateProductDto.brand },
+      where: { id_brand: updateProductDto.id_brand },
     });
 
     //se procede a buscar si la categoria existe
     const categoryExist = await this.categoryRepository.findOne({
-      where: { name: updateProductDto.category },
+      where: { id_category: updateProductDto.id_category },
     });
 
     //se va a actualizar el codigo sku con el metodo generateSKU
     const skugenerate = generateSKU(
-      updateProductDto.brand,
-      updateProductDto.category,
+      updateProductDto.id_brand,
+      updateProductDto.id_category,
       updateProductDto.color,
       updateProductDto.size,
       updateProductDto.name,
@@ -220,14 +213,14 @@ export class ProductService {
     //si la marca no existe dara un error
     if (!brandExist)
       throw new HttpException(
-        `La marca '${updateProductDto.brand}' no exist`,
+        `La marca '${updateProductDto.id_brand}' no exist`,
         HttpStatus.CONFLICT,
       );
 
       //si la categoria no existe dara un error
     if (!categoryExist)
     throw new HttpException(
-      `La categoria '${updateProductDto.category}' no existe`,
+      `La categoria '${updateProductDto.id_category}' no existe`,
       HttpStatus.CONFLICT,
     );
 
@@ -242,24 +235,17 @@ export class ProductService {
     if (updateProductDto.stock == 0) {
       updateProductDto.state = false;
     }
-
-    //el nombre de la marca se cambiara por el id de la marca
-    updateProductDto.brand = brandExist.id_brand;
-    //el nombre de la categoria se cambiara por el id de la categoria
-    updateProductDto.category = categoryExist.id_category;
     //actualizamos el sku al generado
     productToUpdate.sku=skugenerate;
     //Si el producto fue encontado y lo demas validado actualizaremos la info del product con el dto
-    this.productRepository.merge(productToUpdate, updateProductDto);
-    const updatedProduct = await this.productRepository.save(productToUpdate)
+    const productUpdate = this.productRepository.merge(productToUpdate, updateProductDto);
+    productUpdate.brand=brandExist;
+    productUpdate.category=categoryExist;
+    const updatedProduct = await this.productRepository.save(productUpdate)
     //por ultimo buscamos el producto recien actualizado
-    const findProduct = await this.productRepository.findOne({
-      relations:['brand', 'category'],
-      where: { id_product: updatedProduct.id_product, delete_at: null },
-    });
     
     //Retornamos los datos del producto actualizado hacia el cliente
-    return plainToInstance(GetProductDto, findProduct);
+    return plainToInstance(GetProductDto, updatedProduct);
   }
 
   //* Método para eliminar de forma lógica un producto (priduct)

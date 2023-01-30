@@ -42,13 +42,13 @@ export class Product {
   @Column({ type: 'varchar', nullable: true })
   sku: string;
 
-  @ManyToOne(() => Brand, (brand) => brand.id_brand)
-  @JoinColumn({ name: 'brand' })
-  brand: string;
+  @ManyToOne(() => Brand, (brand) => brand.products)
+  @JoinColumn({ name: 'id_brand' })
+  brand: Brand;
 
-  @ManyToOne(() => Category, (category) => category.id_category)
-  @JoinColumn({ name: 'category' })
-  category: string;
+  @ManyToOne(() => Category, (category) => category.products)
+  @JoinColumn({ name: 'id_category' })
+  category: Category;
 
   @CreateDateColumn()
   create_at: Date;
