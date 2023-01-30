@@ -4,12 +4,12 @@ import {
   PrimaryGeneratedColumn,
   CreateDateColumn,
   DeleteDateColumn,
-  OneToMany,
   JoinColumn,
-  ManyToMany,
   ManyToOne,
+  OneToOne,
 } from 'typeorm';
 import { Role } from './role.entity';
+import { Account } from './account.entity';
 
 @Entity({ name: 'employee' })
 export class Employee {
@@ -41,9 +41,12 @@ export class Employee {
   @Column({ default: true, nullable: false })
   state: boolean;
 
-  @ManyToOne(() => Role, (role) =>role.employee)
-  @JoinColumn({name: 'id_role'}) //Como se llamará el campo en la entidad
+  @ManyToOne(() => Role, (role) => role.employee)
+  @JoinColumn({ name: 'id_role' }) //Como se llamará el campo en la entidad
   role: Role;
+
+  @OneToOne(() => Account, (account) => account.employee)
+  account: Account;
 
   @CreateDateColumn()
   create_at: Date;

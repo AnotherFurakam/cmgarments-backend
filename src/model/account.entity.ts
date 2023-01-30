@@ -1,20 +1,27 @@
-import { Column, CreateDateColumn, Entity, JoinColumn, OneToOne, PrimaryGeneratedColumn } from "typeorm";
-import { Employee } from "./employee.entity";
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  JoinColumn,
+  OneToOne,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
+import { Employee } from './employee.entity';
 
-@Entity({name: 'account'})
-export class Account{
+@Entity({ name: 'account' })
+export class Account {
   @PrimaryGeneratedColumn('uuid')
-  id_account: string
+  id_account: string;
 
-  @Column({type: 'varchar' ,unique: true, nullable:false})
-  username: string
+  @Column({ type: 'varchar', unique: true, nullable: false })
+  username: string;
 
-  @Column({type:'varchar', nullable:false})
-  password_hash: string
+  @Column({ type: 'varchar', nullable: false })
+  password_hash: string;
 
   @OneToOne(() => Employee)
-  @JoinColumn()
-  id_employee: string;
+  @JoinColumn({ name: 'id_employee' })
+  employee: Employee;
 
   @CreateDateColumn()
   create_at: Date;
@@ -22,6 +29,6 @@ export class Account{
   @CreateDateColumn()
   update_at: Date;
 
-  @Column({default: false })
+  @Column({ default: false })
   is_delete: boolean;
 }

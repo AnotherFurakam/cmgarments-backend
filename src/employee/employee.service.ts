@@ -4,21 +4,27 @@ import { plainToClass, plainToInstance } from 'class-transformer';
 import { CreateAccountDto } from 'src/account/dto/create.account.dto';
 import { Account } from 'src/model/account.entity';
 import { Employee } from 'src/model/employee.entity';
-import { PaginationQueryDto, PaginationResponseDto } from 'src/utils/paginate/dto';
+import {
+  PaginationQueryDto,
+  PaginationResponseDto,
+} from 'src/utils/paginate/dto';
 import { Repository } from 'typeorm';
 import { CreateEmployeeDto } from './dto/create.employee.dto';
 import { GetEmployeeDto } from './dto/get.employee.dto';
 import { UpdateEmployeeDto } from './dto/update.employee.dto';
+import { Role } from 'src/model/role.entity';
+import { GetRoleDto } from 'src/role/dto/get-role.dto';
 
 @Injectable()
 export class EmployeeService {
   constructor(
     @InjectRepository(Employee) private employeRepository: Repository<Employee>,
     @InjectRepository(Account) private accountRepository: Repository<Account>,
+    @InjectRepository(Role) private roleRepository: Repository<Role>,
   ) {}
 
   // Registrar Empleado:
-  async create(createEmployeeDto: CreateEmployeeDto): Promise<Employee> {
+  async create(createEmployeeDto: CreateEmployeeDto): Promise<GetEmployeeDto> {
     //Buscamos si el dni del empleado ya fue registrado en la base de datos
     const EmployeeExist = await this.employeRepository.findOne({
       where: { dni: createEmployeeDto.dni },
@@ -32,29 +38,40 @@ export class EmployeeService {
         HttpStatus.CONFLICT,
       );
 
+    const role = await this.roleRepository.findOne({
+      where: { id_role: createEmployeeDto.id_role },
+    });
+
+    if (!role)
+      throw new HttpException(
+        `El role con el id '${createEmployeeDto.id_role}' no fue econtrado.`,
+        HttpStatus.NOT_FOUND,
+      );
+
     //Si el empleado no fue registrado se procederá a guardar en la base de datos
-    const createEmployee = await this.employeRepository.save(createEmployeeDto);
+    //Si el rol ingresado existe
+    const employeeToRegist = this.employeRepository.create(createEmployeeDto);
+    employeeToRegist.role = role;
+    const createEmployee = await this.employeRepository.save(employeeToRegist);
 
     //Instanciamos la clase createAccountDto y le pasamos las propiades que necesita para poder
     //Crear una cuenta
-    const createAccountDto = new CreateAccountDto();
-    createAccountDto.id_employee = createEmployee.id_employee;
-    createAccountDto.username = createEmployee.dni;
-    createAccountDto.password_hash = createEmployee.dni;
+    const createAccount = new Account();
+    createAccount.username = createEmployee.dni;
+    createAccount.password_hash = createEmployee.dni;
+    createAccount.employee = createEmployee;
     // Guardamos la cuenta creada anteriormente
-    await this.accountRepository.save(createAccountDto);
+    await this.accountRepository.save(createAccount);
 
     //Retornamos los datos del empleado registrado hacia el cliente
-    return createEmployee;
+    return plainToInstance(GetEmployeeDto, createEmployee);
   }
 
   // Obtener todos los empleados:
   async findAll({
     limit,
     page,
-  }: PaginationQueryDto): Promise<
-    PaginationResponseDto<GetEmployeeDto[]>
-  > {
+  }: PaginationQueryDto): Promise<PaginationResponseDto<GetEmployeeDto[]>> {
     const total = await this.employeRepository.count();
 
     const pages = Math.ceil(total / limit);
@@ -144,7 +161,6 @@ export class EmployeeService {
       );
 
     await this.employeRepository.softDelete(id);
-
 
     return plainToInstance(GetEmployeeDto, employeeToRemove);
   }

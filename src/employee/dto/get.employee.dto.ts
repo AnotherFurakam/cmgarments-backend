@@ -7,9 +7,8 @@ import { GetRoleDto } from 'src/role/dto/get-role.dto';
 //excluyendo los campos que no coincidan con los expuestos en esta clase DTO
 @Exclude()
 export class GetEmployeeDto {
-
   @Expose()
-  id_employee: string
+  id_employee: string;
 
   @Expose()
   names: string;
@@ -35,11 +34,10 @@ export class GetEmployeeDto {
   @Expose()
   state: boolean;
 
-  //@Transform(({value}) => plainToInstance(GetRoleDto,value))
+  @Transform(({ value }) => plainToInstance(GetRoleDto, value))
   @Expose()
-  role: Role;
+  role: GetRoleDto;
 
   @Expose()
   id_account: string;
-
 }
