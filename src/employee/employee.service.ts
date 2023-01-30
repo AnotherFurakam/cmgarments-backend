@@ -1,7 +1,6 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { plainToClass, plainToInstance } from 'class-transformer';
-import { CreateAccountDto } from 'src/account/dto/create.account.dto';
 import { Account } from 'src/model/account.entity';
 import { Employee } from 'src/model/employee.entity';
 import {
@@ -13,7 +12,6 @@ import { CreateEmployeeDto } from './dto/create.employee.dto';
 import { GetEmployeeDto } from './dto/get.employee.dto';
 import { UpdateEmployeeDto } from './dto/update.employee.dto';
 import { Role } from 'src/model/role.entity';
-import { GetRoleDto } from 'src/role/dto/get-role.dto';
 
 @Injectable()
 export class EmployeeService {
@@ -149,7 +147,8 @@ export class EmployeeService {
     return plainToInstance(GetEmployeeDto, updatedEmployee);
   }
 
-  async romove(id: string) {
+  async remove(id: string) {
+    console.log(id);
     const employeeToRemove = await this.employeRepository.findOne({
       where: { id_employee: id },
     });

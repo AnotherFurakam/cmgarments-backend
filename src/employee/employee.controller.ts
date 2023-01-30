@@ -15,7 +15,7 @@ import { UpdateEmployeeDto } from './dto/update.employee.dto';
 import { EmployeeService } from './employee.service';
 
 @Controller('employee')
-@ApiTags("Employee")
+@ApiTags('Employee')
 export class EmployeeController {
   constructor(private readonly employeeService: EmployeeService) {}
 
@@ -103,6 +103,6 @@ export class EmployeeController {
     description: 'No se encontró ningun registro solicitado',
   })
   remove(@Param('id') id: string) {
-    return this.remove(id);
+    return this.employeeService.remove(id);
   }
 }

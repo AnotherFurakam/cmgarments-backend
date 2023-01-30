@@ -26,5 +26,5 @@ export class Role {
   update_at: Date;
 
   @DeleteDateColumn()
-  delete_at: boolean;
+  delete_at: Date;
 }
