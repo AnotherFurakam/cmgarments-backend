@@ -1,6 +1,8 @@
 import { Exclude, Expose, Transform, plainToInstance } from 'class-transformer';
 import { GetBrandDto } from 'src/brand/dto/get-brand.dto';
 import { ResponseCategoryDto } from '../../category/dto/response-category.dto';
+import { GetBrandProductDto } from 'src/brand/dto/get-brand-product.dto';
+import { GetCategoryProductDto } from 'src/category/dto/get-catogory-product.dto';
 @Exclude()
 export class GetProductDto {
   @Expose()
@@ -16,6 +18,7 @@ export class GetProductDto {
   color: string;
 
   @Expose()
+  @Transform(({ value }) => parseFloat(value))
   price: number;
 
   @Expose()
@@ -33,11 +36,11 @@ export class GetProductDto {
   @Expose()
   sku: string;
 
-  @Transform(({ value }) => plainToInstance(GetBrandDto, value))
+  @Transform(({ value }) => plainToInstance(GetBrandProductDto, value))
   @Expose()
   brand: GetBrandDto;
 
-  @Transform(({ value }) => plainToInstance(ResponseCategoryDto, value))
+  @Transform(({ value }) => plainToInstance(GetCategoryProductDto, value))
   @Expose()
   category: ResponseCategoryDto;
 
