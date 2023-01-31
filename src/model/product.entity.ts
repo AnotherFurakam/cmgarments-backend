@@ -1,4 +1,15 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  CreateDateColumn,
+  DeleteDateColumn,
+  Entity,
+  JoinColumn,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn,
+} from 'typeorm';
+import { Brand } from './brand.entity';
+import { Category } from './category.entity';
 @Entity()
 export class Product {
   @PrimaryGeneratedColumn('uuid')
@@ -28,15 +39,23 @@ export class Product {
   @Column()
   state: boolean;
 
-  @Column({ type: 'varchar' })
+  @Column({ type: 'varchar', nullable: true })
   sku: string;
 
-  @Column({ default: false })
-  isDelete: boolean;
+  @ManyToOne(() => Brand, (brand) => brand.products)
+  @JoinColumn({ name: 'id_brand' })
+  brand: Brand;
 
-  @Column({ type: 'varchar' })
-  brand: string;
+  @ManyToOne(() => Category, (category) => category.products)
+  @JoinColumn({ name: 'id_category' })
+  category: Category;
 
-  @Column({ type: 'varchar' })
-  category: string;
+  @CreateDateColumn()
+  create_at: Date;
+
+  @UpdateDateColumn()
+  update_at: Date;
+
+  @DeleteDateColumn()
+  delete_at: Date;
 }

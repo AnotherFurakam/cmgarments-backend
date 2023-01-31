@@ -1,9 +1,11 @@
 import { Length } from 'class-validator';
+import { Product } from './product.entity';
 import {
   Column,
   CreateDateColumn,
   DeleteDateColumn,
   Entity,
+  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
@@ -29,4 +31,7 @@ export class Category {
 
   @DeleteDateColumn()
   deletedAt?: Date;
+
+  @OneToMany(type => Product, product => product.id_product)
+  products: Product[];
 }

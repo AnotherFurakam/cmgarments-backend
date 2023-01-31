@@ -9,6 +9,8 @@ import {
   MinLength,
 } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
+import { Brand } from '../../model/brand.entity';
+import { Category } from '../../model/category.entity';
 export class CreateProductDto {
   @IsNotEmpty()
   @IsString()
@@ -89,18 +91,13 @@ export class CreateProductDto {
   })
   state: boolean;
 
-  @ApiProperty({
-    description: 'Sku del producto al registrar',
-  })
-  sku: string;
-
   @IsNotEmpty()
   @IsString()
   @ApiProperty({
     description: 'Id de la marca del producto al registrar',
     type: String,
   })
-  brand: string;
+  id_brand: string;
 
   @IsNotEmpty()
   @IsString()
@@ -108,5 +105,5 @@ export class CreateProductDto {
     description: 'Id de la categoria del producto al registrar',
     type: String,
   })
-  category: string;
+  id_category: string;
 }
