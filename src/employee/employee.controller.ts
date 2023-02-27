@@ -1,24 +1,25 @@
 import {
-  Controller,
-  Get,
-  Post,
   Body,
-  Param,
+  Controller,
   Delete,
+  Get,
+  Param,
+  Post,
   Put,
   Query,
 } from '@nestjs/common';
-import { BrandService } from './brand.service';
-import { CreateBrandDto } from './dto/create-brand.dto';
-import { UpdateBrandDto } from './dto/update-brand.dto';
 import { ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { PaginationQueryDto } from '../utils/paginate/dto';
+import { PaginationQueryDto } from 'src/utils/paginate/dto';
+import { CreateEmployeeDto } from './dto/create.employee.dto';
+import { UpdateEmployeeDto } from './dto/update.employee.dto';
+import { EmployeeService } from './employee.service';
 
-@Controller('brand')
-@ApiTags('Brand')
-export class BrandController {
-  constructor(private readonly brandService: BrandService) {}
+@Controller('employee')
+@ApiTags('Employee')
+export class EmployeeController {
+  constructor(private readonly employeeService: EmployeeService) {}
 
+  //Registrar empleado:
   @Post()
   @ApiResponse({
     status: 201,
@@ -28,10 +29,11 @@ export class BrandController {
     status: 409,
     description: 'Hubo un conflicto al realizar el registro',
   })
-  create(@Body() createBrandDto: CreateBrandDto) {
-    return this.brandService.create(createBrandDto);
+  create(@Body() createEmployeeDto: CreateEmployeeDto) {
+    return this.employeeService.create(createEmployeeDto);
   }
 
+  // Obtener todos los empleados:
   @Get()
   @ApiResponse({
     status: 200,
@@ -56,9 +58,10 @@ export class BrandController {
     @Query()
     paginationQuery: PaginationQueryDto,
   ) {
-    return this.brandService.findAll(paginationQuery);
+    return this.employeeService.findAll(paginationQuery);
   }
 
+  // Obtener empleados por id;
   @Get(':id')
   @ApiResponse({
     status: 200,
@@ -69,9 +72,10 @@ export class BrandController {
     description: 'No se encontró ningun registro solicitado',
   })
   findOne(@Param('id') id: string) {
-    return this.brandService.findOne(id);
+    return this.employeeService.findOne(id);
   }
 
+  //Actualizar empleado:
   @Put(':id')
   @ApiResponse({
     status: 200,
@@ -81,10 +85,14 @@ export class BrandController {
     status: 404,
     description: 'No se encontró ningun registro solicitado',
   })
-  update(@Param('id') id: string, @Body() updateBrandDto: UpdateBrandDto) {
-    return this.brandService.update(id, updateBrandDto);
+  update(
+    @Param('id') id: string,
+    @Body() updateEmployeeDto: UpdateEmployeeDto,
+  ) {
+    return this.employeeService.update(id, updateEmployeeDto);
   }
 
+  //Eliminar empleado:
   @Delete(':id')
   @ApiResponse({
     status: 200,
@@ -95,6 +103,6 @@ export class BrandController {
     description: 'No se encontró ningun registro solicitado',
   })
   remove(@Param('id') id: string) {
-    return this.brandService.remove(id);
+    return this.employeeService.remove(id);
   }
 }
