@@ -12,7 +12,7 @@ import { BrandService } from './brand.service';
 import { CreateBrandDto } from './dto/create-brand.dto';
 import { UpdateBrandDto } from './dto/update-brand.dto';
 import { ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { PaginationQueryDto } from 'src/utils/paginate/dto';
+import { PaginationQueryDto } from '../utils/paginate/dto';
 
 @Controller('brand')
 @ApiTags('Brand')

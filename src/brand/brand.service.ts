@@ -7,14 +7,14 @@ import {
 import { CreateBrandDto } from './dto/create-brand.dto';
 import { UpdateBrandDto } from './dto/update-brand.dto';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Brand } from 'src/model/brand.entity';
+import { Brand } from '../model/brand.entity';
 import { Repository } from 'typeorm';
 import { plainToInstance } from 'class-transformer';
 import { GetBrandDto } from './dto/get-brand.dto';
 import {
   PaginationQueryDto,
   PaginationResponseDto,
-} from 'src/utils/paginate/dto';
+} from '../utils/paginate/dto';
 
 @Injectable()
 export class BrandService {
@@ -24,13 +24,13 @@ export class BrandService {
 
   //*Método para crear una marca de producto (brand)
   //Recibimos como parámetro el dto con los datos correspondientes y validados
-  async create(createBrandDto: CreateBrandDto): Promise<Brand> {
+  async create(createBrandDto: CreateBrandDto): Promise<GetBrandDto> {
     try {
       //Si el brand no fue registrado se procederá a guardar en la base de datos
       const createBrand = await this.brandRepository.save(createBrandDto);
 
       //Retornamos los datos del brand registrado hacia el cliente
-      return createBrand;
+      return plainToInstance(GetBrandDto, createBrand);
     } catch (error) {
       //Duplicate constraint
       if (error.code === '23505')

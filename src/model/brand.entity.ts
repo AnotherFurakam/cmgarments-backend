@@ -20,7 +20,7 @@ export class Brand {
   createAt: Date;
 
   @DeleteDateColumn()
-  delete_at: boolean;
+  delete_at: Date;
 
   @OneToMany(() => Product, (product) => product.id_product)
   products: Product[];
