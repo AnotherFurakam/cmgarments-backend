@@ -66,8 +66,8 @@ export class CreateEmployeeDto {
   @MaxLength(35)
   @ApiProperty({
     description: 'Email del empleado',
-    minLength: 9,
-    maxLength: 9,
+    minLength: 15,
+    maxLength: 35,
   })
   email: string;
 
@@ -75,8 +75,6 @@ export class CreateEmployeeDto {
   @IsDate()
   @ApiProperty({
     description: 'Fecha de nacimiento del empleado',
-    minLength: 9,
-    maxLength: 9,
   })
   date_birth: Date;
 
@@ -84,8 +82,6 @@ export class CreateEmployeeDto {
   @IsUUID()
   @ApiProperty({
     description: 'Id del rol del empleado',
-    minLength: 9,
-    maxLength: 9,
   })
   id_role: string;
 }
