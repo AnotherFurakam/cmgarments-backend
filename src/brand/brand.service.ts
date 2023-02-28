@@ -71,7 +71,7 @@ export class BrandService {
     const brandList = await this.brandRepository.find({
       skip: (page - 1) * limit,
       take: limit,
-      order: { createAt: 'ASC' },
+      order: { createAt: 'DESC' },
     });
 
     //Mapeamos los registros hacia la clase dto previamente configurada
