@@ -56,8 +56,6 @@ export class CreateProductDto {
   })
   price: number;
 
-  @IsNotEmpty()
-  @IsInt()
   @Min(0)
   @ApiProperty({
     description: 'Precio del producto al registrar',
