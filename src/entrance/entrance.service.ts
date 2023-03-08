@@ -46,6 +46,9 @@ export class EntranceService {
             HttpStatus.CONFLICT,
         );
 
+        productExist.stock = productExist.stock + createEntranceDto.units;  
+        await this.productRepository.save(productExist);
+
         //ya se crea la entrada y se guarda en la database
         const entranceToRegist = this.entranceRepository.create(createEntranceDto);
         //guardamos los objetos con respecto al uid del producto
@@ -174,6 +177,9 @@ export class EntranceService {
             HttpStatus.CONFLICT,
         );
 
+        productExist.stock = productExist.stock - entranceToUpdate.units + updateEntranceDto.units;  
+        await this.productRepository.save(productExist);
+
         //Si el supplier fue encontado actualizaremos la info del supplier con el dto
         const entranceUpdate = this.entranceRepository.merge(entranceToUpdate, updateEntranceDto);
         entranceUpdate.product = productExist;
@@ -190,6 +196,19 @@ export class EntranceService {
             relations: ['product', 'supplier'],
             where: { id_entrance: id, delete_at: null }, 
         });
+
+        const productExist = await this.productRepository.findOne({
+            where: { id_product: entranceToRemove.product.id_product },
+        });
+
+        if (!productExist)
+        throw new HttpException(
+            `El producto'${entranceToRemove.product.id_product}' no existe`,
+            HttpStatus.CONFLICT,
+        );
+
+        productExist.stock = productExist.stock - entranceToRemove.units; 
+        await this.productRepository.save(productExist);
 
         // Si el producto no fue encontrado o su propiedad delete_at no es null devolvemos un error
         if (!entranceToRemove || entranceToRemove.delete_at != null)
