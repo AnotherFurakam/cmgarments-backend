@@ -102,10 +102,13 @@ export class ProductService {
     const pages = Math.ceil(total / limit);
 
     // verificar que la página solicitada no sea mayor a las páginas totales
-    if (page > pages) {
+    if (page > pages){
       if (total === 0) throw new BadRequestException('Aun no hay Productos');
-      throw new BadRequestException(`El número de página ${page} no existe`);
-    }
+      throw new HttpException(
+          `El número de página ${page} no existe.`,
+          HttpStatus.BAD_REQUEST,
+      );
+  }
     //El skip es la cantidad de registros que debemos saltar para poder tomar registros según el límite establecido
     // (page - 1 * limit) es como decir (2 - 1) * 10 es decir que saltaremos 10 registros para obtener los siguientes
     // 10 registros de la segunda página.
