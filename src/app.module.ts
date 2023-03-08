@@ -9,6 +9,8 @@ import { CategoryModule } from './category/category.module';
 import { AccountModule } from './account/account.module';
 import { EmployeeModule } from './employee/employee.module';
 import { RoleModule } from './role/role.module';
+import { SupplierModule } from './supplier/supplier.module';
+import { EntranceModule } from './entrance/entrance.module';
 
 config();
 @Module({
@@ -23,12 +25,14 @@ config();
       entities: [__dirname + '/**/*.entity{.ts,.js}'],
       synchronize: true,
     }),
+    EntranceModule,
     BrandModule,
     ProductModule,
     CategoryModule,
     AccountModule,
     EmployeeModule,
     RoleModule,
+    SupplierModule,
   ],
   controllers: [AppController],
   providers: [AppService],

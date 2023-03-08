@@ -5,11 +5,13 @@ import {
   Entity,
   JoinColumn,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
 import { Brand } from './brand.entity';
 import { Category } from './category.entity';
+import { Entrance } from './entrance.entity';
 @Entity()
 export class Product {
   @PrimaryGeneratedColumn('uuid')
@@ -58,4 +60,7 @@ export class Product {
 
   @DeleteDateColumn()
   delete_at: Date;
+
+  @OneToMany(() => Entrance, (entrance) => entrance.id_entrance)
+  entrance: Entrance[];
 }
