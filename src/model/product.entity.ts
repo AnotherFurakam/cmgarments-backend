@@ -29,7 +29,7 @@ export class Product {
   @Column({ type: 'decimal', precision: 10, scale: 2 })
   price: number;
 
-  @Column({ type: 'integer' })
+  @Column({ type: 'integer', default: 0 })
   stock: number;
 
   @Column({ type: 'varchar', length: 20 })
