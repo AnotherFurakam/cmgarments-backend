@@ -13,7 +13,7 @@ export class Entrance {
     @Column({ type: 'integer' })
     units: number;
 
-    @Column({ type: 'integer' })
+    @Column({ type: 'decimal', precision: 10, scale: 2 })
     unit_cost: number;
 
     @ManyToOne(() => Product, (product) => product.entrance)
