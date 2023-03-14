@@ -1,4 +1,4 @@
-import { ConflictException, HttpException, HttpStatus, Injectable } from "@nestjs/common";
+import { BadRequestException, ConflictException, HttpException, HttpStatus, Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { plainToInstance } from "class-transformer";
 import { Entrance } from "src/model/entrance.entity";
@@ -76,12 +76,13 @@ export class EntranceService {
         const pages = Math.ceil(total / limit);
 
         //Comprobamos que la página solicitada no sea mayor al número de páginas total calculado
-        if (page > pages)
-        throw new HttpException(
-            `El número de página ${page} no existe.`,
-            HttpStatus.BAD_REQUEST,
-        );
-
+        if (page > pages){
+            if (total === 0) throw new BadRequestException('Aun no hay Entradas');
+            throw new HttpException(
+                `El número de página ${page} no existe.`,
+                HttpStatus.BAD_REQUEST,
+            );
+        }
         //El skip es la cantidad de registros que debemos saltar para poder tomar registros según el límite establecido
         // (page - 1 * limit) es como decir (2 - 1) * 10 es decir que saltaremos 10 registros para obtener los siguientes
         // 10 registros de la segunda página.

@@ -1,5 +1,7 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { IsInt, IsNotEmpty, IsString, Max, MaxLength, Min } from "class-validator";
+import { Transform } from "class-transformer";
+import { IsDecimal, IsInt, IsNotEmpty, IsString, Max, MaxLength, Min } from "class-validator";
+import { isFloat32Array } from "util/types";
 
 export class CreateEntranceDto {
     @IsNotEmpty()
@@ -26,7 +28,6 @@ export class CreateEntranceDto {
     units: number;
 
     @IsNotEmpty()
-    @IsInt()
     @Min(0)
     @Max(1000)
     @ApiProperty({

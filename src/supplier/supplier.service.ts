@@ -20,32 +20,9 @@ import { UpdateSupplierDto } from './dto/update-supplier.dto';
 
 @Injectable()
 export class SupplierService {
-  constructor(
-    @InjectRepository(Supplier)
-    private supplierRepository: Repository<Supplier>,
-  ) {}
-
-  //*Método para crear un proveedor (supplier)
-  //Recibimos como parámetro el dto con los datos correspondientes y validados
-  async create(createSupplierDto: CreateSupplierDto): Promise<GetSupplierDto> {
-    try {
-      //Si el supplier no fue registrado se procederá a guardar en la base de datos
-      const createSupplier = await this.supplierRepository.save(
-        createSupplierDto,
-      );
-
-      //Retornamos los datos del supplier registrado hacia el cliente
-      return plainToInstance(GetSupplierDto, createSupplier);
-    } catch (error) {
-      //Duplicate constraint
-      if (error.code === '23505')
-        //El código de estado a utilizar sera el CONFLIC -> para indicar conflictos al registrar
-        //Si el nombre del supplier ya fue registrado lanzamos un error que diga que ya fue registrado
-        throw new ConflictException(
-          `El proveedor con el nombre '${createSupplierDto.name}' ya existe.`,
-        );
-    }
-  }
+    constructor(
+        @InjectRepository(Supplier) private supplierRepository: Repository<Supplier>,
+    ) {}
 
   //* Método para retornar, de forma páginada, la lista de todas los proveedores registrados
   //Para poder validar que los datos de la paginación (page, limit) sean validados
