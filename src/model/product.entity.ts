@@ -12,6 +12,7 @@ import {
 import { Brand } from './brand.entity';
 import { Category } from './category.entity';
 import { Entrance } from './entrance.entity';
+import { Purchase_detail } from './purchase_detail.entity';
 @Entity()
 export class Product {
   @PrimaryGeneratedColumn('uuid')
@@ -63,4 +64,10 @@ export class Product {
 
   @OneToMany(() => Entrance, (entrance) => entrance.id_entrance)
   entrance: Entrance[];
+
+  @OneToMany(
+    () => Purchase_detail,
+    (purchase_detail) => purchase_detail.id_purchase_detail,
+  )
+  purchase_detail: Purchase_detail[];
 }

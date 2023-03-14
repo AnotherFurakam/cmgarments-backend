@@ -1,7 +1,6 @@
 import {
   IsBoolean,
   IsEnum,
-  IsInt,
   IsNotEmpty,
   IsString,
   MaxLength,
@@ -9,8 +8,6 @@ import {
   MinLength,
 } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
-import { Brand } from '../../model/brand.entity';
-import { Category } from '../../model/category.entity';
 export class CreateProductDto {
   @IsNotEmpty()
   @IsString()

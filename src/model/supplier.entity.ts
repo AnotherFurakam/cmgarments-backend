@@ -1,45 +1,49 @@
 import {
-    Column,
-    CreateDateColumn,
-    DeleteDateColumn,
-    Entity,
-    OneToMany,
-    PrimaryGeneratedColumn,
-    UpdateDateColumn,
-  } from 'typeorm';
+  Column,
+  CreateDateColumn,
+  DeleteDateColumn,
+  Entity,
+  OneToMany,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn,
+} from 'typeorm';
 import { Entrance } from './entrance.entity';
+import { Purchase } from './purchase.entity';
 @Entity()
-export class Supplier{
-    @PrimaryGeneratedColumn('uuid')
-    id_supplier: string;
+export class Supplier {
+  @PrimaryGeneratedColumn('uuid')
+  id_supplier: string;
 
-    @Column({ type: 'varchar', length: 20, unique: true })
-    name: string;
-    
-    @Column({ type: 'varchar', length: 1000})
-    description: string;
+  @Column({ type: 'varchar', length: 20, unique: true })
+  name: string;
 
-    @Column({ type: 'varchar', length: 100})
-    address: string;
+  @Column({ type: 'varchar', length: 1000 })
+  description: string;
 
-    @Column({ type: 'char', length: 9})
-    phone: string;
+  @Column({ type: 'varchar', length: 100 })
+  address: string;
 
-    @Column({ type: 'char', length: 11})
-    ruc: string;
+  @Column({ type: 'char', length: 9 })
+  phone: string;
 
-    @Column()
-    state: boolean;
+  @Column({ type: 'char', length: 11 })
+  ruc: string;
 
-    @CreateDateColumn()
-    create_at: Date;
+  @Column()
+  state: boolean;
 
-    @UpdateDateColumn()
-    update_at: Date;
+  @CreateDateColumn()
+  create_at: Date;
 
-    @DeleteDateColumn()
-    delete_at: Date; 
-    
-    @OneToMany(() => Entrance, (entrance) => entrance.id_entrance)
-    entrance: Entrance[];
+  @UpdateDateColumn()
+  update_at: Date;
+
+  @DeleteDateColumn()
+  delete_at: Date;
+
+  @OneToMany(() => Entrance, (entrance) => entrance.id_entrance)
+  entrance: Entrance[];
+
+  @OneToMany(() => Purchase, (purchase) => purchase.id_purchase)
+  purchase: Purchase[];
 }
