@@ -88,7 +88,7 @@ export class PurchaseService {
     //En caso de que el brand no exista, lanzamos un error con el mesaje y código correspondiente
     if (!findPurchase)
       throw new HttpException(
-        `El empleado con id el '${id}' no se encontró`,
+        `La compra con id el '${id}' no se encontró`,
         HttpStatus.NOT_FOUND,
       );
 
