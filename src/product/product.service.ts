@@ -16,6 +16,13 @@ import { PaginationResponseDto } from '../utils/paginate/dto/pagination-response
 import { UpdateProductDto } from './dto/update-product.dto';
 import { generateSKU } from 'src/utils/sku/generate-sku';
 import { Category } from '../model/category.entity';
+import { Image } from '../model/image.entity';
+import { CloudinaryService } from '../cloudinary/cloudinary.service';
+import { CreateImageDto } from './dto/image/create-image.dto';
+import { UploadApiResponse, UploadApiErrorResponse } from 'cloudinary';
+import { ImageDto } from './dto/image/image.dto';
+import { ResponseImageDto } from './dto/image/response-image.dto';
+import { imageFormat } from '../utils/image';
 
 @Injectable()
 export class ProductService {
@@ -24,6 +31,8 @@ export class ProductService {
     @InjectRepository(Brand) private brandRepository: Repository<Brand>,
     @InjectRepository(Category)
     private categoryRepository: Repository<Category>,
+    @InjectRepository(Image) private imageRepository: Repository<Image>,
+    private readonly cloudinaryService: CloudinaryService,
   ) {}
 
   //*Método para crear un producto (product)
@@ -102,13 +111,13 @@ export class ProductService {
     const pages = Math.ceil(total / limit);
 
     // verificar que la página solicitada no sea mayor a las páginas totales
-    if (page > pages){
+    if (page > pages) {
       if (total === 0) throw new BadRequestException('Aun no hay Productos');
       throw new HttpException(
-          `El número de página ${page} no existe.`,
-          HttpStatus.BAD_REQUEST,
+        `El número de página ${page} no existe.`,
+        HttpStatus.BAD_REQUEST,
       );
-  }
+    }
     //El skip es la cantidad de registros que debemos saltar para poder tomar registros según el límite establecido
     // (page - 1 * limit) es como decir (2 - 1) * 10 es decir que saltaremos 10 registros para obtener los siguientes
     // 10 registros de la segunda página.
@@ -272,5 +281,39 @@ export class ProductService {
     await this.productRepository.softDelete(id);
     //Retornamos los datos del producto registrado hacia el cliente
     return plainToInstance(GetProductDto, productToRemove);
+  }
+
+  //? POST - Guardado de Imagen
+  async saveImage(id: string, createImageDto: CreateImageDto) {
+    // obtener producto desde el servicio para q en caso no exista de un error
+    const product = await this.findOne(id);
+
+    const { image, title, main } = createImageDto;
+    let resImg: UploadApiResponse | UploadApiErrorResponse;
+
+    // verificamos el tipo si es imagen
+    if (!imageFormat.includes(image.mimetype))
+      throw new BadRequestException('Tipo de archivo invalido');
+
+    // guardamos la imagen utilizando el sevicio de cloudinary
+    try {
+      resImg = await this.cloudinaryService.uploadImage(image);
+    } catch (e) {
+      throw new BadRequestException('Tipo de archivo invalido');
+    }
+
+    // obtenemos la url de la respuesta del guardado de imagen
+    const { url } = resImg as UploadApiResponse;
+    const imageDto: ImageDto = { title, url, main, id_product: id };
+
+    // creamos, agregamos el producto para q se guarde el id_product y guardamos
+    const createImage = this.imageRepository.create(imageDto);
+    createImage.product = plainToInstance(Product, product);
+    const data = this.imageRepository.save(createImage);
+
+    // limpiamos la data que nos devuelve el guardado
+    const dataImage = plainToInstance(ResponseImageDto, data);
+
+    return dataImage;
   }
 }

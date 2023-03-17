@@ -30,12 +30,4 @@ export class CreateImageDto {
     type: Boolean,
   })
   main?: boolean;
-
-  @IsNotEmpty()
-  @IsUUID()
-  @ApiProperty({
-    description: 'Id del producto',
-    type: String,
-  })
-  id_product: string;
 }
