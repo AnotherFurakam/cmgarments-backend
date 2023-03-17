@@ -7,12 +7,17 @@ import {
   Param,
   Put,
   Delete,
+  ParseUUIDPipe,
+  UseInterceptors,
+  UploadedFile,
 } from '@nestjs/common';
 import { ApiTags, ApiResponse, ApiQuery } from '@nestjs/swagger';
 import { ProductService } from './product.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { PaginationQueryDto } from '../utils/paginate/dto/pagination-query.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
+import { CreateImageDto } from './dto/image/create-image.dto';
+import { FileInterceptor } from '@nestjs/platform-express';
 
 @Controller('product')
 @ApiTags('Product')
@@ -96,5 +101,24 @@ export class ProductController {
   })
   remove(@Param('id') id: string) {
     return this.productService.remove(id);
+  }
+
+  @Post(':id/image')
+  @ApiResponse({
+    status: 201,
+    description: 'Imagen guardado correctamente',
+  })
+  @ApiResponse({
+    status: 409,
+    description: 'Hubo un conflicto al guardar la Imagen',
+  })
+  @UseInterceptors(FileInterceptor('image'))
+  saveImage(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() createImagesDto: CreateImageDto,
+    @UploadedFile() image: Express.Multer.File,
+  ) {
+    createImagesDto.image = image;
+    return this.productService.saveImage(id, createImagesDto);
   }
 }

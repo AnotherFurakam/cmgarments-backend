@@ -13,6 +13,7 @@ import { SupplierModule } from './supplier/supplier.module';
 import { EntranceModule } from './entrance/entrance.module';
 import { PurchaseModule } from './purchase/purchase.module';
 import { PurchaseDetailModule } from './purchase_detail/purchase_detail.module';
+import { CloudinaryModule } from './cloudinary/cloudinary.module';
 
 config();
 @Module({
@@ -37,6 +38,7 @@ config();
     SupplierModule,
     PurchaseModule,
     PurchaseDetailModule,
+    CloudinaryModule,
   ],
   controllers: [AppController],
   providers: [AppService],
