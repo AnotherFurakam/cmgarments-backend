@@ -56,9 +56,6 @@ export class Product {
     @JoinColumn({ name: 'id_brand' })
     brand: Brand;
     
-    @ManyToOne(() => Brand, (brand) => brand.products)
-    @JoinColumn({ name: 'id_brand' })
-    brand: Brand;
 
     @ManyToOne(() => Category, (category) => category.products)
     @JoinColumn({ name: 'id_category' })
@@ -85,9 +82,6 @@ export class Product {
 
     @DeleteDateColumn()
     delete_at: Date;
-    
-    @OneToMany(() => Entrance, (entrance) => entrance.id_entrance)
-    entrance: Entrance[];
 
     @OneToMany(() => ProductSupplier, (product_supplier) => product_supplier.product)
     products_suppliers: ProductSupplier[];
