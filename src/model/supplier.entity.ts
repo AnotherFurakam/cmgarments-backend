@@ -1,13 +1,18 @@
+
 import {
     Column,
     CreateDateColumn,
     DeleteDateColumn,
     Entity,
+    JoinTable,
+    ManyToMany,
     OneToMany,
     PrimaryGeneratedColumn,
     UpdateDateColumn,
   } from 'typeorm';
 import { Entrance } from './entrance.entity';
+import { Product } from './product.entity';
+import { ProductSupplier } from './productsupplier.entity';
 @Entity()
 export class Supplier{
     @PrimaryGeneratedColumn('uuid')
@@ -42,4 +47,9 @@ export class Supplier{
     
     @OneToMany(() => Entrance, (entrance) => entrance.id_entrance)
     entrance: Entrance[];
+    
+    @OneToMany(() => ProductSupplier, (product_supplier) => product_supplier.supplier)
+    products_suppliers: ProductSupplier[];
 }
+
+

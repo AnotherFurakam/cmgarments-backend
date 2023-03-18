@@ -11,6 +11,7 @@ import { EmployeeModule } from './employee/employee.module';
 import { RoleModule } from './role/role.module';
 import { SupplierModule } from './supplier/supplier.module';
 import { EntranceModule } from './entrance/entrance.module';
+import { ProductSupplierModule } from './productsupplier/productsupplier.module';
 
 config();
 @Module({
@@ -33,6 +34,7 @@ config();
     EmployeeModule,
     RoleModule,
     SupplierModule,
+    ProductSupplierModule,
   ],
   controllers: [AppController],
   providers: [AppService],
