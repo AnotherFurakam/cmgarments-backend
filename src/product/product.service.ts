@@ -3,6 +3,7 @@ import {
   HttpException,
   HttpStatus,
   BadRequestException,
+  NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -21,8 +22,9 @@ import { CloudinaryService } from '../cloudinary/cloudinary.service';
 import { CreateImageDto } from './dto/image/create-image.dto';
 import { UploadApiResponse, UploadApiErrorResponse } from 'cloudinary';
 import { ImageDto } from './dto/image/image.dto';
-import { ResponseImageDto } from './dto/image/response-image.dto';
+import { ResponseImageProductDto } from './dto/image/response-image-product.dto';
 import { imageFormat } from '../utils/image';
+import { ResponseImageDto } from './dto/image/response-image.dto';
 
 @Injectable()
 export class ProductService {
@@ -283,7 +285,7 @@ export class ProductService {
     return plainToInstance(GetProductDto, productToRemove);
   }
 
-  //? POST - Guardado de Imagen
+  //? POST - Guardar Imagen segun ID de Producto
   async saveImage(id: string, createImageDto: CreateImageDto) {
     // obtener producto desde el servicio para q en caso no exista de un error
     const product = await this.findOne(id);
@@ -295,14 +297,14 @@ export class ProductService {
     if (!imageFormat.includes(image.mimetype))
       throw new BadRequestException('Tipo de archivo invalido');
 
-    // guardamos la imagen utilizando el sevicio de cloudinary
+    //* guardamos la imagen utilizando el sevicio de cloudinary
     try {
       resImg = await this.cloudinaryService.uploadImage(image);
     } catch (e) {
       throw new BadRequestException('Tipo de archivo invalido');
     }
 
-    // obtenemos la url de la respuesta del guardado de imagen
+    //* obtenemos la url de la respuesta del guardado de imagen
     const { url } = resImg as UploadApiResponse;
     const imageDto: ImageDto = { title, url, main, id_product: id };
 
@@ -312,8 +314,62 @@ export class ProductService {
     const data = this.imageRepository.save(createImage);
 
     // limpiamos la data que nos devuelve el guardado
-    const dataImage = plainToInstance(ResponseImageDto, data);
+    const dataImage = plainToInstance(ResponseImageProductDto, data);
 
     return dataImage;
+  }
+
+  //? GET - Obtener imagenes según ID de producto
+  async findImages(id: string) {
+    // verificar si el producto existe
+    await this.findOne(id);
+
+    //* obtener todas las imagenes
+    const images = await this.imageRepository.find({
+      where: {
+        product: {
+          id_product: id,
+        },
+      },
+    });
+
+    // limpiar el arreglo de imagenes
+    const dataImages = images.map((image) =>
+      plainToInstance(ResponseImageDto, image),
+    );
+
+    return dataImages;
+  }
+
+  //? DELETE - Eliminar una Imagen por ID
+  async removeImage(id: string) {
+    // verificar si la imagen existe
+    const image = await this.getByImageId(id);
+
+    //* Eliminar Imagen
+    const deleteImage = await this.imageRepository.softDelete(id);
+
+    // verificar si se han afectado columnas. Si se elimino la imagen
+    if (!deleteImage.affected)
+      throw new NotFoundException(`La Imagen con el id "${id}" no existe`);
+
+    // convertimos de tipo "Image" a "ResponseImageDto"
+    const data = plainToInstance(ResponseImageDto, image);
+
+    return data;
+  }
+
+  //*  Obtener IMAGE por ID (Método)
+  private async getByImageId(id: string) {
+    // Obtener image por id
+    const image = await this.imageRepository.findOne({
+      where: { id_image: id },
+    });
+
+    // verificar si existe
+    if (!image)
+      throw new NotFoundException(`La Imagen con el id "${id}" no existe`);
+
+    return image;
   }
 }

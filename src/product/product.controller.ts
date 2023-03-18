@@ -121,4 +121,35 @@ export class ProductController {
     createImagesDto.image = image;
     return this.productService.saveImage(id, createImagesDto);
   }
+
+  @Get(':id/image')
+  @ApiResponse({
+    status: 200,
+    description: 'Registros obtenidos satisfactoriamente',
+  })
+  @ApiResponse({
+    status: 400,
+    description:
+      'No se ingresaron los paramentros correctamente o la página solicitada no existe',
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'No se encontró el Producto Solicitado',
+  })
+  findImages(@Param('id', ParseUUIDPipe) id: string) {
+    return this.productService.findImages(id);
+  }
+
+  @Delete('image/:id')
+  @ApiResponse({
+    status: 200,
+    description: 'Image eliminada satisfactoriamente',
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'No se encontró la Imagen solicitada',
+  })
+  removeImage(@Param('id', ParseUUIDPipe) id: string) {
+    return this.productService.removeImage(id);
+  }
 }
