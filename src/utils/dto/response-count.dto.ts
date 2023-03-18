@@ -1,10 +1,10 @@
 import { Exclude, Expose } from 'class-transformer';
 
 @Exclude()
-export class GetProductEntranceDto {
+export class ResponseCountDto {
   @Expose()
-  id_product: string;
+  type: string;
 
   @Expose()
-  name: string;
+  total: number;
 }

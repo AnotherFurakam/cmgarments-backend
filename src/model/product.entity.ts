@@ -14,8 +14,11 @@ import {
 import { Brand } from './brand.entity';
 import { Category } from './category.entity';
 import { Entrance } from './entrance.entity';
+import { Image } from './image.entity';
+import { Purchase_detail } from './purchase_detail.entity';
 import { ProductSupplier } from './productsupplier.entity';
 import { Supplier } from './supplier.entity';
+
 @Entity()
 export class Product {
     @PrimaryGeneratedColumn('uuid')
@@ -48,6 +51,11 @@ export class Product {
     @Column({ type: 'varchar', nullable: true })
     sku: string;
 
+    //? ManyToOne
+    @ManyToOne(() => Brand, (brand) => brand.products)
+    @JoinColumn({ name: 'id_brand' })
+    brand: Brand;
+    
     @ManyToOne(() => Brand, (brand) => brand.products)
     @JoinColumn({ name: 'id_brand' })
     brand: Brand;
@@ -55,6 +63,19 @@ export class Product {
     @ManyToOne(() => Category, (category) => category.products)
     @JoinColumn({ name: 'id_category' })
     category: Category;
+
+    //? OneToMany
+    @OneToMany(() => Entrance, (entrance) => entrance.id_entrance)
+    entrance: Entrance[];
+
+    @OneToMany(
+      () => Purchase_detail,
+      (purchase_detail) => purchase_detail.id_purchase_detail,
+    )
+    purchase_detail: Purchase_detail[];
+
+    @OneToMany(() => Image, (image) => image.product)
+    images: Image[];
 
     @CreateDateColumn()
     create_at: Date;
@@ -64,7 +85,7 @@ export class Product {
 
     @DeleteDateColumn()
     delete_at: Date;
-
+    
     @OneToMany(() => Entrance, (entrance) => entrance.id_entrance)
     entrance: Entrance[];
 

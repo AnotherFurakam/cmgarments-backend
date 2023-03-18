@@ -34,7 +34,6 @@ export class CategoryController {
   }
 
   @Get()
-  @Get()
   @ApiResponse({
     status: 200,
     description: 'Categorías obtenidas satisfactoriamente',
