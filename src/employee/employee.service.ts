@@ -12,6 +12,7 @@ import { CreateEmployeeDto } from './dto/create.employee.dto';
 import { GetEmployeeDto } from './dto/get.employee.dto';
 import { UpdateEmployeeDto } from './dto/update.employee.dto';
 import { Role } from 'src/model/role.entity';
+import { ResponseCountDto } from '../utils/dto/response-count.dto';
 
 @Injectable()
 export class EmployeeService {
@@ -162,5 +163,13 @@ export class EmployeeService {
     await this.employeRepository.softDelete(id);
 
     return plainToInstance(GetEmployeeDto, employeeToRemove);
+  }
+
+  //? (GET) - Obtener cantidad de EMPLEADOS
+  async getQuantity() {
+    const total = await this.employeRepository.count();
+    const data: ResponseCountDto = { type: 'Empleado', total };
+
+    return data;
   }
 }

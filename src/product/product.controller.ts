@@ -152,4 +152,17 @@ export class ProductController {
   removeImage(@Param('id', ParseUUIDPipe) id: string) {
     return this.productService.removeImage(id);
   }
+
+  @Get('count/quantity')
+  @ApiResponse({
+    status: 200,
+    description: 'Cantidad de Productos obtenidas satisfactoriamente',
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Ocurrio un error al obtener cantidad de Productos',
+  })
+  getQuantity() {
+    return this.productService.getQuantity();
+  }
 }

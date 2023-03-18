@@ -105,4 +105,17 @@ export class EmployeeController {
   remove(@Param('id') id: string) {
     return this.employeeService.remove(id);
   }
+
+  @Get('count/quantity')
+  @ApiResponse({
+    status: 200,
+    description: 'Cantidad de Empleados obtenidas satisfactoriamente',
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Ocurrio un error al obtener cantidad de Empleados',
+  })
+  getQuantity() {
+    return this.employeeService.getQuantity();
+  }
 }
