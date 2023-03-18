@@ -2,7 +2,7 @@ import { Exclude, Expose, Transform, plainToInstance } from 'class-transformer';
 import { GetProductEntranceDto } from '../get-product-entrance.dto';
 
 @Exclude()
-export class ResponseImageDto {
+export class ResponseImageProductDto {
   @Expose()
   id_image: string;
 
@@ -14,4 +14,8 @@ export class ResponseImageDto {
 
   @Expose()
   main: boolean;
+
+  @Transform(({ value }) => plainToInstance(GetProductEntranceDto, value))
+  @Expose()
+  product: GetProductEntranceDto;
 }
