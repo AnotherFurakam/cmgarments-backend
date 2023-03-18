@@ -25,6 +25,7 @@ import { ImageDto } from './dto/image/image.dto';
 import { ResponseImageProductDto } from './dto/image/response-image-product.dto';
 import { imageFormat } from '../utils/image';
 import { ResponseImageDto } from './dto/image/response-image.dto';
+import { ResponseCountDto } from '../utils/dto/response-count.dto';
 
 @Injectable()
 export class ProductService {
@@ -285,7 +286,8 @@ export class ProductService {
     return plainToInstance(GetProductDto, productToRemove);
   }
 
-  //? POST - Guardar Imagen segun ID de Producto
+  //? (POST) - Guardar IMAGEN segun ID de Producto
+  //! arreglar la propiedad "main" siempre true
   async saveImage(id: string, createImageDto: CreateImageDto) {
     // obtener producto desde el servicio para q en caso no exista de un error
     const product = await this.findOne(id);
@@ -319,7 +321,7 @@ export class ProductService {
     return dataImage;
   }
 
-  //? GET - Obtener imagenes según ID de producto
+  //? (GET) - Obtener IMAGENES según ID de producto
   async findImages(id: string) {
     // verificar si el producto existe
     await this.findOne(id);
@@ -341,7 +343,7 @@ export class ProductService {
     return dataImages;
   }
 
-  //? DELETE - Eliminar una Imagen por ID
+  //? (DELETE) - Eliminar una IMAGEN por ID
   async removeImage(id: string) {
     // verificar si la imagen existe
     const image = await this.getByImageId(id);
@@ -355,6 +357,14 @@ export class ProductService {
 
     // convertimos de tipo "Image" a "ResponseImageDto"
     const data = plainToInstance(ResponseImageDto, image);
+
+    return data;
+  }
+
+  //? (GET) - Obtener cantidad de PRODUCTOS
+  async getQuantity() {
+    const total = await this.productRepository.count();
+    const data: ResponseCountDto = { type: 'Producto', total };
 
     return data;
   }
