@@ -6,7 +6,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { ILike, Repository } from 'typeorm';
 import { Product } from '../model/product.entity';
 import { CreateProductDto } from './dto/create-product.dto';
 import { Brand } from '../model/brand.entity';
@@ -26,6 +26,8 @@ import { ResponseImageProductDto } from './dto/image/response-image-product.dto'
 import { imageFormat } from '../utils/image';
 import { ResponseImageDto } from './dto/image/response-image.dto';
 import { ResponseCountDto } from '../utils/dto/response-count.dto';
+import { SearchByEnum } from './dto/search-by.enum';
+import { SearchDto } from './dto/search.dto';
 
 @Injectable()
 export class ProductService {
@@ -381,5 +383,73 @@ export class ProductService {
       throw new NotFoundException(`La Imagen con el id "${id}" no existe`);
 
     return image;
+  }
+
+  //* Función que realiza la busqueda de un producto mediante su nombre o sku
+
+  /**
+   * Retorna los productos encontrados por nombre o sku
+   * @param searchDto SearchDto: Contiene el nombre y criterio de busqueda
+   * @param paginationQuery PaginationQueryDto -> Página y límite de productos a buscar
+   * @returns PaginationResponseDto<GetProductoDto>
+   */
+  async searchProduct(
+    searchDto: SearchDto,
+    paginationQuery: PaginationQueryDto,
+  ): Promise<PaginationResponseDto<GetProductDto[]>> {
+    const { text, searchBy }: SearchDto = searchDto;
+    const { limit, page }: PaginationQueryDto = paginationQuery;
+    const total = await this.productRepository.count();
+    const pages = Math.ceil(total / limit);
+
+    switch (searchBy) {
+      case SearchByEnum.NAME:
+        const productListByName = await this.productRepository.find({
+          relations: ['brand', 'category'],
+          where: {
+            name: ILike(`%${text}%`),
+          },
+          take: limit,
+          skip: (page - 1) * limit,
+        });
+
+        const productListDtobyName: GetProductDto[] = productListByName.map(
+          (p: Product) => plainToInstance(GetProductDto, p),
+        );
+
+        return {
+          actualPage: page,
+          totalPages: pages,
+          nextPage: page < pages && pages > 0 ? page + 1 : null,
+          prevPage: page > 1 ? page - 1 : null,
+          data: productListDtobyName,
+        } as PaginationResponseDto<GetProductDto[]>;
+
+      case SearchByEnum.SKU:
+        const productListBySku = await this.productRepository.find({
+          relations: ['brand', 'category'],
+          where: {
+            sku: ILike(`${text}%`),
+          },
+          take: limit,
+          skip: (page - 1) * limit,
+        });
+
+        const dataBySku: GetProductDto[] = productListBySku.map((p: Product) =>
+          plainToInstance(GetProductDto, p),
+        );
+
+        return {
+          actualPage: page,
+          totalPages: pages,
+          nextPage: page < pages && pages > 0 ? page + 1 : null,
+          prevPage: page > 1 ? page - 1 : null,
+          data: dataBySku,
+        } as PaginationResponseDto<GetProductDto[]>;
+      default:
+        throw new BadRequestException(
+          'El criterio de busqueda es erroneo, solo puede buscar por nombre o sku',
+        );
+    }
   }
 }
