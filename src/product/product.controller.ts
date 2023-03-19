@@ -19,6 +19,7 @@ import { UpdateProductDto } from './dto/update-product.dto';
 import { CreateImageDto } from './dto/image/create-image.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { SearchDto } from './dto/search.dto';
+import { FilterByDateDto } from './dto/filtro-by-fecha.dto';
 
 @Controller('product')
 @ApiTags('Product')
@@ -167,8 +168,6 @@ export class ProductController {
     return this.productService.getQuantity();
   }
 
-  //TODO: Endpoint de busqueda de producto
-
   @Get('search/by')
   @ApiResponse({
     status: 200,
@@ -180,6 +179,24 @@ export class ProductController {
   })
   searchProducto(@Query() searchDto: SearchDto) {
     return this.productService.searchProduct(searchDto, {
+      limit: 5,
+      page: 1,
+    } as PaginationQueryDto);
+  }
+
+  //TODO: Endpoint de busqueda de producto
+
+  @Get('filter/items')
+  @ApiResponse({
+    status: 200,
+    description: 'Producto encontrado satisfactoriamente',
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Error al filtrar el producto',
+  })
+  filterProductoByFecha(@Query() filterDto: FilterByDateDto) {
+    return this.productService.filterByDate(filterDto, {
       limit: 5,
       page: 1,
     } as PaginationQueryDto);

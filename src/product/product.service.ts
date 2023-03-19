@@ -28,6 +28,7 @@ import { ResponseImageDto } from './dto/image/response-image.dto';
 import { ResponseCountDto } from '../utils/dto/response-count.dto';
 import { SearchByEnum } from './dto/search-by.enum';
 import { SearchDto } from './dto/search.dto';
+import { FilterByDateDto } from './dto/filtro-by-fecha.dto';
 
 @Injectable()
 export class ProductService {
@@ -451,5 +452,35 @@ export class ProductService {
           'El criterio de busqueda es erroneo, solo puede buscar por nombre o sku',
         );
     }
+  }
+  //* Función que filtra los productos por fecha
+
+  async filterByDate(
+    { date }: FilterByDateDto,
+    { limit, page }: PaginationQueryDto,
+  ): Promise<PaginationResponseDto<GetProductDto[]>> {
+    const total = await this.productRepository.count();
+    const pages = Math.ceil(total / limit);
+
+    const productListByDate: Product[] = await this.productRepository
+      .createQueryBuilder('product')
+      .leftJoinAndSelect('product.brand', 'brand')
+      .leftJoinAndSelect('product.category', 'category')
+      .where(`DATE(product.create_at) = DATE(:date)`, { date })
+      .take(limit)
+      .skip((page - 1) * limit)
+      .getMany();
+
+    const dataByDate = productListByDate.map((p) =>
+      plainToInstance(GetProductDto, p),
+    );
+
+    return {
+      actualPage: page,
+      totalPages: pages,
+      nextPage: page < pages && pages > 0 ? page + 1 : null,
+      prevPage: page > 1 ? page - 1 : null,
+      data: dataByDate,
+    } as PaginationResponseDto<GetProductDto[]>;
   }
 }
