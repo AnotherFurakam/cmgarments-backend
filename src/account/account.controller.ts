@@ -1,10 +1,25 @@
-import { Controller, Param, Post } from '@nestjs/common';
+import { Body, Controller, Post, UseGuards } from '@nestjs/common';
 import { ApiResponse, ApiTags } from '@nestjs/swagger';
-import { create } from 'domain';
+import { AuthGuard } from '@nestjs/passport';
 import { AccountService } from './account.service';
-import { CreateAccountDto } from './dto/create.account.dto';
+import { LoginAccountDto } from './dto/login-account.dto';
 
 @Controller('account')
+@ApiTags('Account')
 export class AccountController {
-  private readonly accountService: AccountService;
+  constructor(private readonly accountService: AccountService) {}
+
+  @Post('auth/login')
+  // @UseGuards(AuthGuard('local'))
+  @ApiResponse({
+    status: 200,
+    description: 'Logeado Correctamente',
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Problema con las credenciales',
+  })
+  login(@Body() loginAccountDto: LoginAccountDto) {
+    return this.accountService.login(loginAccountDto);
+  }
 }
