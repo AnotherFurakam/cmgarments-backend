@@ -10,6 +10,7 @@ import {
 import { Repository } from 'typeorm';
 import { CreatePurchaseDto } from './dto/create-purchase.dto';
 import { GetPurchaseDto } from './dto/get-purchase.dto';
+import { UpdatePurchaseDto } from './dto/update-purchase.dto';
 
 @Injectable()
 export class PurchaseService {
@@ -93,5 +94,49 @@ export class PurchaseService {
       );
 
     return plainToClass(GetPurchaseDto, findPurchase);
+  }
+
+  //* Método para actualizar una compra
+  async update(
+    id: string,
+    updatePurchaseDto: UpdatePurchaseDto,
+  ): Promise<GetPurchaseDto> {
+    //Obtenemos la compra que deseamos actualizar
+    const purchaseToUpdate = await this.purchaseRepository.findOne({
+      where: { id_purchase: id },
+    });
+    //Si la compra no fue encontrado devolveremos un error indicando que este no fue encontrado
+    if (!purchaseToUpdate)
+      throw new HttpException(
+        `La compra con el '${id} no se encontró'`,
+        HttpStatus.NOT_FOUND,
+      );
+
+    //Si la compra fue encontado actualizaremos la info del brand con el dto
+    this.purchaseRepository.merge(purchaseToUpdate, updatePurchaseDto);
+
+    //Por último guardamos el brand y retornamos la info actualizada
+    const updatedPurchase = await this.purchaseRepository.save(
+      purchaseToUpdate,
+    );
+
+    return plainToInstance(GetPurchaseDto, updatedPurchase);
+  }
+
+  async remove(id: string) {
+    console.log(id);
+    const purchaseToRemove = await this.purchaseRepository.findOne({
+      where: { id_purchase: id },
+    });
+
+    if (!purchaseToRemove || purchaseToRemove.delete_at)
+      throw new HttpException(
+        `La compra con el id '${id}' no se encontró`,
+        HttpStatus.NOT_FOUND,
+      );
+
+    await this.purchaseRepository.softDelete(id);
+
+    return plainToInstance(GetPurchaseDto, purchaseToRemove);
   }
 }
