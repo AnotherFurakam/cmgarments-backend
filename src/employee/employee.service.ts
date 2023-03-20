@@ -56,8 +56,8 @@ export class EmployeeService {
     //Instanciamos la clase createAccountDto y le pasamos las propiades que necesita para poder
     //Crear una cuenta
     const createAccount = new Account();
-    createAccount.username = createEmployee.dni;
-    createAccount.password_hash = createEmployee.dni;
+    createAccount.username = `AD${createEmployee.dni}`;
+    createAccount.password_hash = createEmployee.phone_number;
     createAccount.employee = createEmployee;
     // Guardamos la cuenta creada anteriormente
     await this.accountRepository.save(createAccount);
