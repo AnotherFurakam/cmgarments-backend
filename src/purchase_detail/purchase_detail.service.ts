@@ -11,6 +11,7 @@ import {
 import { Repository } from 'typeorm';
 import { CreatePurchaseDetailDto } from './dto/create-purchase-detail.dto';
 import { GetPurchaseDetailDto } from './dto/get-purchase-detail.dto';
+import { UpdatePurchaseDetailDto } from './dto/update-purchase-detail.dto';
 
 @Injectable()
 export class PurchaseDetailService {
@@ -115,5 +116,87 @@ export class PurchaseDetailService {
       );
 
     return plainToClass(GetPurchaseDetailDto, findPurchaseDetail);
+  }
+
+  //* Método para actualizar una compra
+  async update(
+    id: string,
+    updateEmployeeDto: UpdatePurchaseDetailDto,
+  ): Promise<GetPurchaseDetailDto> {
+    //Obtenemos el brand que deseamos actualizar
+    const employeeToUpdate = await this.purchaseDetailRepository.findOne({
+      where: { id_purchase_detail: id },
+    });
+    //Si el brand no fue encontrado devolveremos un error indicando que este no fue encontrado
+    if (!employeeToUpdate)
+      throw new HttpException(
+        `El detalle de la compra con el '${id} no se encontró'`,
+        HttpStatus.NOT_FOUND,
+      );
+
+    //Si el brand fue encontado actualizaremos la info del brand con el dto
+    this.purchaseDetailRepository.merge(employeeToUpdate, updateEmployeeDto);
+
+    //Por último guardamos el brand y retornamos la info actualizada
+    const updatedEmployee = await this.purchaseDetailRepository.save(
+      employeeToUpdate,
+    );
+
+    return plainToInstance(GetPurchaseDetailDto, updatedEmployee);
+  }
+
+  async remove(id: string) {
+    console.log(id);
+    const purchaseDetailToRemove = await this.purchaseDetailRepository.findOne({
+      where: { id_purchase_detail: id },
+    });
+
+    if (!purchaseDetailToRemove || purchaseDetailToRemove.delete_at)
+      throw new HttpException(
+        `El detalle de la compra con el id '${id}' no se encontró`,
+        HttpStatus.NOT_FOUND,
+      );
+
+    await this.purchaseDetailRepository.softDelete(id);
+
+    return plainToInstance(GetPurchaseDetailDto, purchaseDetailToRemove);
+  }
+
+  //Metodos para obtener todos los detalles de compra por id de compra
+  async findAllByIdPurchase(
+    id: any,
+    { limit, page }: PaginationQueryDto,
+  ): Promise<PaginationResponseDto<GetPurchaseDetailDto[]>> {
+    const total = await this.purchaseDetailRepository.count();
+
+    const pages = Math.ceil(total / limit);
+
+    if (page > pages)
+      throw new HttpException(
+        `El pagina n° ${page} no existe`,
+        HttpStatus.BAD_REQUEST,
+      );
+
+    const purchaseList = await this.purchaseDetailRepository.find({
+      relations: ['id_product', 'id_purchase'],
+      skip: (page - 1) * limit,
+      take: limit,
+      order: { create_at: 'ASC' },
+      where: {
+        id_purchase: id,
+      },
+    });
+
+    const data = purchaseList.map((e: Purchase_detail) =>
+      plainToClass(GetPurchaseDetailDto, e),
+    );
+
+    return {
+      totalPages: pages,
+      actualPage: page,
+      nextPage: page < pages && pages > 0 ? page + 1 : null,
+      prevPage: page > 1 ? page - 1 : null,
+      data,
+    } as PaginationResponseDto<GetPurchaseDetailDto[]>;
   }
 }

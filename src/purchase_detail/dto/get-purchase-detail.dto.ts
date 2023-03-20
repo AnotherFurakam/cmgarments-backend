@@ -7,7 +7,6 @@ export class GetPurchaseDetailDto {
   id_purchase_detail: string;
 
   @Expose()
-  @Transform(({ value }) => parseInt(value))
   units: number;
 
   @Expose()
