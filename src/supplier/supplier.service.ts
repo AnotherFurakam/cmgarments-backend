@@ -1,13 +1,11 @@
 import {
-  BadRequestException,
   ConflictException,
   HttpException,
   HttpStatus,
   Injectable,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { plainToClass, plainToInstance } from 'class-transformer';
-import { validate } from 'class-validator';
+import { plainToInstance } from 'class-transformer';
 import { Supplier } from 'src/model/supplier.entity';
 import {
   PaginationQueryDto,
@@ -17,6 +15,7 @@ import { Repository } from 'typeorm';
 import { CreateSupplierDto } from './dto/create-supplier.dto';
 import { GetSupplierDto } from './dto/get-supplier.dto';
 import { UpdateSupplierDto } from './dto/update-supplier.dto';
+import { ResponseCountDto } from 'src/utils/dto/response-count.dto';
 
 @Injectable()
 export class SupplierService {
@@ -162,5 +161,14 @@ export class SupplierService {
     await this.supplierRepository.softDelete(id);
     //Por último guardamos y retornamos la data
     return plainToInstance(GetSupplierDto, supplierToRemove);
+  }
+
+  //*Método para obtener la cantidad de Suppliers que se registraron
+  async getQuantity(): Promise<ResponseCountDto> {
+    const supplierQuantity = await this.supplierRepository.count();
+    return {
+      type: 'Proveedores',
+      total: supplierQuantity,
+    } as ResponseCountDto;
   }
 }

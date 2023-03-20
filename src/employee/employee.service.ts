@@ -168,7 +168,7 @@ export class EmployeeService {
   //? (GET) - Obtener cantidad de EMPLEADOS
   async getQuantity() {
     const total = await this.employeRepository.count();
-    const data: ResponseCountDto = { type: 'Empleado', total };
+    const data: ResponseCountDto = { type: 'Empleados', total };
 
     return data;
   }

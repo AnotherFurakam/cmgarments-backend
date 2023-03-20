@@ -20,6 +20,7 @@ import { CreateImageDto } from './dto/image/create-image.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { SearchDto } from './dto/search.dto';
 import { FilterByDateDto } from './dto/filtro-by-fecha.dto';
+import { RecentProductsQueryDto } from './dto/recent-products-query.dto';
 
 @Controller('product')
 @ApiTags('Product')
@@ -184,8 +185,6 @@ export class ProductController {
     } as PaginationQueryDto);
   }
 
-  //TODO: Endpoint de busqueda de producto
-
   @Get('filter/items')
   @ApiResponse({
     status: 200,
@@ -200,5 +199,10 @@ export class ProductController {
       limit: 5,
       page: 1,
     } as PaginationQueryDto);
+  }
+
+  @Get('recents/items/')
+  getRecentsProducts(@Query() { quantity }: RecentProductsQueryDto) {
+    return this.productService.getRecentsProducts(quantity);
   }
 }

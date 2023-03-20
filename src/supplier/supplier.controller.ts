@@ -100,4 +100,17 @@ export class SupplierController {
   remove(@Param('id') id: string) {
     return this.supplierService.remove(id);
   }
+
+  @Get('count/quantity')
+  @ApiResponse({
+    status: 200,
+    description: 'Cantidad solicitada correctamente',
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'No se pudo obtener la cantidad solicitada',
+  })
+  quantity() {
+    return this.supplierService.getQuantity();
+  }
 }
