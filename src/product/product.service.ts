@@ -457,7 +457,7 @@ export class ProductService {
   //* Función que filtra los productos por fecha
 
   async filterByDate(
-    { date }: FilterByDateDto,
+    { dateStart, dateEnd }: FilterByDateDto,
     { limit, page }: PaginationQueryDto,
   ): Promise<PaginationResponseDto<GetProductDto[]>> {
     const total = await this.productRepository.count();
@@ -467,7 +467,11 @@ export class ProductService {
       .createQueryBuilder('product')
       .leftJoinAndSelect('product.brand', 'brand')
       .leftJoinAndSelect('product.category', 'category')
-      .where(`DATE(product.create_at) = DATE(:date)`, { date })
+      .where(
+        `DATE(product.create_at) BETWEEN DATE(:dateStart) AND DATE(:dateEnd)`,
+        { dateStart, dateEnd },
+      )
+      .orderBy('product.create_at', 'DESC')
       .take(limit)
       .skip((page - 1) * limit)
       .getMany();
