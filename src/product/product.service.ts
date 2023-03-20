@@ -29,6 +29,7 @@ import { ResponseCountDto } from '../utils/dto/response-count.dto';
 import { SearchByEnum } from './dto/search-by.enum';
 import { SearchDto } from './dto/search.dto';
 import { FilterByDateDto } from './dto/filtro-by-fecha.dto';
+import { ProductImageDto } from './product-image-response.dto';
 
 @Injectable()
 export class ProductService {
@@ -485,14 +486,14 @@ export class ProductService {
   }
 
   //* Función para obtener los productos recientes
-  async getRecentsProducts(quantity: number): Promise<GetProductDto[]> {
+  async getRecentsProducts(quantity: number): Promise<ProductImageDto[]> {
     const productos: Product[] = await this.productRepository.find({
-      relations: ['brand', 'category'],
+      relations: ['images'],
       take: quantity,
       order: {
         create_at: 'DESC',
       },
     });
-    return productos.map((p) => plainToInstance(GetProductDto, p));
+    return productos.map((p) => plainToInstance(ProductImageDto, p));
   }
 }
