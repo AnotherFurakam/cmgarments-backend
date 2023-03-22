@@ -20,7 +20,7 @@ export class Purchase_detail {
   units: number;
 
   @Column({ type: 'decimal', precision: 10, scale: 2 })
-  total_price: number;
+  price: number;
 
   @ManyToOne(() => Product, (product) => product.purchase_detail)
   @JoinColumn({ name: 'id_product' })

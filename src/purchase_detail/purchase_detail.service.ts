@@ -121,28 +121,31 @@ export class PurchaseDetailService {
   //* Método para actualizar una compra
   async update(
     id: string,
-    updateEmployeeDto: UpdatePurchaseDetailDto,
+    updatePurchaseDetailDto: UpdatePurchaseDetailDto,
   ): Promise<GetPurchaseDetailDto> {
     //Obtenemos el brand que deseamos actualizar
-    const employeeToUpdate = await this.purchaseDetailRepository.findOne({
+    const purchaseDetailToUpdate = await this.purchaseDetailRepository.findOne({
       where: { id_purchase_detail: id },
     });
     //Si el brand no fue encontrado devolveremos un error indicando que este no fue encontrado
-    if (!employeeToUpdate)
+    if (!purchaseDetailToUpdate)
       throw new HttpException(
         `El detalle de la compra con el '${id} no se encontró'`,
         HttpStatus.NOT_FOUND,
       );
 
     //Si el brand fue encontado actualizaremos la info del brand con el dto
-    this.purchaseDetailRepository.merge(employeeToUpdate, updateEmployeeDto);
-
-    //Por último guardamos el brand y retornamos la info actualizada
-    const updatedEmployee = await this.purchaseDetailRepository.save(
-      employeeToUpdate,
+    this.purchaseDetailRepository.merge(
+      purchaseDetailToUpdate,
+      updatePurchaseDetailDto,
     );
 
-    return plainToInstance(GetPurchaseDetailDto, updatedEmployee);
+    //Por último guardamos el brand y retornamos la info actualizada
+    const updatedPurchaseDetal = await this.purchaseDetailRepository.save(
+      purchaseDetailToUpdate,
+    );
+
+    return plainToInstance(GetPurchaseDetailDto, updatedPurchaseDetal);
   }
 
   async remove(id: string) {
