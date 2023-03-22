@@ -11,7 +11,7 @@ export class GetPurchaseDetailDto {
 
   @Expose()
   @Transform(({ value }) => parseFloat(value))
-  total_price: number;
+  price: number;
 
   @Expose()
   date_purchase: Date;
