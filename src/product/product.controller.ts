@@ -205,4 +205,54 @@ export class ProductController {
   getRecentsProducts(@Query() { quantity }: RecentProductsQueryDto) {
     return this.productService.getRecentsProducts(quantity);
   }
+
+  //
+  @Get('brand/:id')
+  @ApiResponse({
+    status: 200,
+    description: 'Registros obtenidos satisfactoriamente',
+  })
+  @ApiResponse({
+    status: 400,
+    description:
+      'No se ingresaron los paramentros correctamente o la página solicitada no existe',
+  })
+  @ApiQuery({
+    name: 'page',
+    description: 'Por defecto se buscará la página 1',
+    required: false,
+  })
+  @ApiQuery({
+    name: 'limit',
+    description: 'Por defecto el límite de registros a mostrar será 10',
+    required: false,
+  })
+  findAllByIdBrand(@Param('id') id: string) {
+    return this.productService.findAllByIdBrand(id);
+  }
+
+  //
+  @Get('category/:id')
+  @ApiResponse({
+    status: 200,
+    description: 'Registros obtenidos satisfactoriamente',
+  })
+  @ApiResponse({
+    status: 400,
+    description:
+      'No se ingresaron los paramentros correctamente o la página solicitada no existe',
+  })
+  @ApiQuery({
+    name: 'page',
+    description: 'Por defecto se buscará la página 1',
+    required: false,
+  })
+  @ApiQuery({
+    name: 'limit',
+    description: 'Por defecto el límite de registros a mostrar será 10',
+    required: false,
+  })
+  findAllByIdCategory(@Param('id') id: string) {
+    return this.productService.findAllByIdCategory(id);
+  }
 }

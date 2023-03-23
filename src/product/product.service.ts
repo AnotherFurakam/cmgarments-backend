@@ -30,6 +30,8 @@ import { SearchByEnum } from './dto/search-by.enum';
 import { SearchDto } from './dto/search.dto';
 import { FilterByDateDto } from './dto/filtro-by-fecha.dto';
 import { ProductImageDto } from './product-image-response.dto';
+import { GetProductByIdBrandDto } from './dto/get-product-brand.dto';
+import { GetProductByIdCategoryDto } from './dto/get-product-category.dto';
 
 @Injectable()
 export class ProductService {
@@ -499,5 +501,43 @@ export class ProductService {
       },
     });
     return productos.map((p) => plainToInstance(ProductImageDto, p));
+  }
+
+  //? (GET) - Obtener productos según ID de la marca
+  async findAllByIdBrand(id: string): Promise<GetProductByIdBrandDto[]> {
+    const dataList = await this.productRepository.find({
+      relations: ['brand', 'category'],
+      where: {
+        brand: {
+          id_brand: id,
+        },
+      },
+    });
+
+    // limpiar el arreglo de imagenes
+    const data = dataList.map((p) =>
+      plainToInstance(GetProductByIdBrandDto, p),
+    );
+
+    return data;
+  }
+
+  //? (GET) - Obtener productos según ID de la marca
+  async findAllByIdCategory(id: string): Promise<GetProductByIdCategoryDto[]> {
+    const dataList = await this.productRepository.find({
+      relations: ['brand', 'category'],
+      where: {
+        category: {
+          id_category: id,
+        },
+      },
+    });
+
+    // limpiar el arreglo de imagenes
+    const data = dataList.map((p) =>
+      plainToInstance(GetProductByIdCategoryDto, p),
+    );
+
+    return data;
   }
 }
