@@ -125,6 +125,42 @@ export class ProductController {
     return this.productService.saveImage(id, createImagesDto);
   }
 
+  @Get(':id/sizes')
+  @ApiResponse({
+    status: 200,
+    description: 'Registros obtenidos satisfactoriamente',
+  })
+  @ApiResponse({
+    status: 400,
+    description:
+      'No se ingresaron los paramentros correctamente o la página solicitada no existe',
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'No se encontró el Producto Solicitado',
+  })
+  findRelationSizes(@Param('id', ParseUUIDPipe) id: string) {
+    return this.productService.findRelationSizes(id);
+  }
+
+  @Get('relation/:id/:size')
+  @ApiResponse({
+    status: 200,
+    description: 'Registros obtenidos satisfactoriamente',
+  })
+  @ApiResponse({
+    status: 400,
+    description:
+      'No se ingresaron los paramentros correctamente o la página solicitada no existe',
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'No se encontró el Producto Solicitado',
+  })
+  findNameSizes(@Param('id', ParseUUIDPipe) id: string, @Param('size') size: string) {
+    return this.productService.findNameSize(id, size);
+  }
+
   @Get(':id/image')
   @ApiResponse({
     status: 200,
