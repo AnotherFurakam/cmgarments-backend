@@ -32,6 +32,7 @@ import { FilterByDateDto } from './dto/filtro-by-fecha.dto';
 import { ProductImageDto } from './product-image-response.dto';
 import { GetProductByIdBrandDto } from './dto/get-product-brand.dto';
 import { GetProductByIdCategoryDto } from './dto/get-product-category.dto';
+import { GetRelationSizes } from './dto/get-relation-sizes.dto';
 
 @Injectable()
 export class ProductService {
@@ -72,6 +73,11 @@ export class ProductService {
       where: { sku: skugenerate },
     });
 
+    //se procede a comprobar si el producto y la talla ya existe
+    const prodSizeExist = await this.productRepository.findOne({
+      where: { name: createProductDto.name, size: createProductDto.size}
+    });
+
     //si la marca no existe dara un error
     if (!brandExist)
       throw new HttpException(
@@ -85,6 +91,13 @@ export class ProductService {
         `La categoria '${createProductDto.id_category}' no existe`,
         HttpStatus.CONFLICT,
       );
+
+        // si el producto y la talla ya existe dara un error
+    if (prodSizeExist)
+    throw new HttpException(
+      `El producto con el nombre y talla '${createProductDto.name}', '${createProductDto.size}' ya existe.`,
+      HttpStatus.CONFLICT,
+    );
 
     //si el sku ya existe dara un error
     if (skuExist)
@@ -165,6 +178,63 @@ export class ProductService {
     return data;
   }
 
+  async findRelationSizes(id: string): Promise<GetRelationSizes>{
+
+    //Realizamos la busqueda del brand mediante su id en la base de datos
+    const findProduct = await this.productRepository.findOne({
+      relations: ['brand', 'category'],
+      where: { id_product: id, delete_at: null },
+    });
+
+    if (!findProduct)
+      throw new HttpException(
+        `El producto con el id '${id}' no fue encontrado`,
+        HttpStatus.NOT_FOUND,
+      );
+
+    //se procede a buscar las tallas relaciondas
+    const relatedSizes = await this.productRepository.find({
+      relations: ['brand', 'category'],
+      where: { name: findProduct.name}
+    });
+    
+    const relation_size = relatedSizes.map(p => p.size);
+
+    const response = new GetRelationSizes(relation_size);
+
+    return response
+
+  }
+  
+  async findNameSize(id: string, size: string): Promise<GetProductDto>{
+    //Realizamos la busqueda del brand mediante su id en la base de datos
+    const findProduct = await this.productRepository.findOne({
+      relations: ['brand', 'category'],
+      where: { id_product: id, delete_at: null },
+    });
+
+    if (!findProduct)
+      throw new HttpException(
+        `El producto con el id '${id}' no fue encontrado`,
+        HttpStatus.NOT_FOUND,
+      );
+
+    const findNameSize = await this.productRepository.findOne({
+      relations: ['brand', 'category'],
+      where: { name: findProduct.name, delete_at: null , size: size},
+    });
+
+    if (!findNameSize)
+      throw new HttpException(
+        `El producto '${findProduct.name}' con la talla '${size}' no fue encontrado`,
+        HttpStatus.NOT_FOUND,
+      );
+    
+    const data = plainToInstance(GetProductDto, findNameSize)
+
+    return data
+  }
+
   //* Método para encontrar un producto (product) no eliminado mediante su id(uuid)
   async findOne(id: string): Promise<GetProductDto> {
     //Realizamos la busqueda del brand mediante su id en la base de datos
@@ -201,6 +271,17 @@ export class ProductService {
         `El producto con el id '${id} no fue encontrado.'`,
         HttpStatus.NOT_FOUND,
       );
+
+      //se procede a comprobar si el producto y la talla ya existe
+    const prodSizeExist = await this.productRepository.findOne({
+      where: { name: updateProductDto.name, size: updateProductDto.size}
+    });
+
+    if (prodSizeExist)
+    throw new HttpException(
+      `El producto con el nombre y talla '${updateProductDto.name}', '${updateProductDto.size}' ya existe.`,
+      HttpStatus.CONFLICT,
+    );
 
     //en caso de que el stock sea 0, el producto de deshabilitara
     if (updateProductDto.stock == 0) {
