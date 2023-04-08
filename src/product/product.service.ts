@@ -6,7 +6,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { ILike, Repository } from 'typeorm';
+import { ILike, MoreThan, Repository } from 'typeorm';
 import { Product } from '../model/product.entity';
 import { CreateProductDto } from './dto/create-product.dto';
 import { Brand } from '../model/brand.entity';
@@ -195,7 +195,7 @@ export class ProductService {
     //se procede a buscar las tallas relaciondas
     const relatedSizes = await this.productRepository.find({
       relations: ['brand', 'category'],
-      where: { name: findProduct.name}
+      where: { name: findProduct.name, stock: MoreThan(0) }
     });
     
     const relation_size = relatedSizes.map(p => p.size);
@@ -277,7 +277,7 @@ export class ProductService {
       where: { name: updateProductDto.name, size: updateProductDto.size}
     });
 
-    if (prodSizeExist)
+    if (prodSizeExist && (prodSizeExist.size !== productToUpdate.size || prodSizeExist.name !== productToUpdate.name))
     throw new HttpException(
       `El producto con el nombre y talla '${updateProductDto.name}', '${updateProductDto.size}' ya existe.`,
       HttpStatus.CONFLICT,
