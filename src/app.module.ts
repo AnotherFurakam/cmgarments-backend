@@ -15,6 +15,7 @@ import { PurchaseModule } from './purchase/purchase.module';
 import { PurchaseDetailModule } from './purchase_detail/purchase_detail.module';
 import { CloudinaryModule } from './cloudinary/cloudinary.module';
 import { ProductSupplierModule } from './productsupplier/productsupplier.module';
+import { AuthModule } from './auth/auth.module';
 
 config();
 @Module({
@@ -41,6 +42,7 @@ config();
     PurchaseDetailModule,
     CloudinaryModule,
     ProductSupplierModule,
+    AuthModule,
   ],
   controllers: [AppController],
   providers: [AppService],
