@@ -5,6 +5,7 @@ import {
   JoinColumn,
   OneToOne,
   PrimaryGeneratedColumn,
+  UpdateDateColumn,
 } from 'typeorm';
 import { Employee } from './employee.entity';
 
@@ -26,7 +27,7 @@ export class Account {
   @CreateDateColumn()
   create_at: Date;
 
-  @CreateDateColumn()
+  @UpdateDateColumn()
   update_at: Date;
 
   @Column({ default: false })
