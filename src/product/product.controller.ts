@@ -157,7 +157,10 @@ export class ProductController {
     status: 404,
     description: 'No se encontró el Producto Solicitado',
   })
-  findNameSizes(@Param('id', ParseUUIDPipe) id: string, @Param('size') size: string) {
+  findNameSizes(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Param('size') size: string,
+  ) {
     return this.productService.findNameSize(id, size);
   }
 
@@ -216,7 +219,7 @@ export class ProductController {
   })
   searchProducto(@Query() searchDto: SearchDto) {
     return this.productService.searchProduct(searchDto, {
-      limit: 5,
+      limit: 8,
       page: 1,
     } as PaginationQueryDto);
   }
@@ -232,7 +235,7 @@ export class ProductController {
   })
   filterProductoByFecha(@Query() filterDto: FilterByDateDto) {
     return this.productService.filterByDate(filterDto, {
-      limit: 5,
+      limit: 8,
       page: 1,
     } as PaginationQueryDto);
   }
@@ -253,18 +256,8 @@ export class ProductController {
     description:
       'No se ingresaron los paramentros correctamente o la página solicitada no existe',
   })
-  @ApiQuery({
-    name: 'page',
-    description: 'Por defecto se buscará la página 1',
-    required: false,
-  })
-  @ApiQuery({
-    name: 'limit',
-    description: 'Por defecto el límite de registros a mostrar será 10',
-    required: false,
-  })
   findAllByIdBrand(@Param('id') id: string) {
-    return this.productService.findAllByIdBrand(id);
+    return this.productService.findAllByIdBrand(id, { limit: 8, page: 1 });
   }
 
   //
@@ -278,17 +271,7 @@ export class ProductController {
     description:
       'No se ingresaron los paramentros correctamente o la página solicitada no existe',
   })
-  @ApiQuery({
-    name: 'page',
-    description: 'Por defecto se buscará la página 1',
-    required: false,
-  })
-  @ApiQuery({
-    name: 'limit',
-    description: 'Por defecto el límite de registros a mostrar será 10',
-    required: false,
-  })
   findAllByIdCategory(@Param('id') id: string) {
-    return this.productService.findAllByIdCategory(id);
+    return this.productService.findAllByIdCategory(id, { limit: 8, page: 1 });
   }
 }
