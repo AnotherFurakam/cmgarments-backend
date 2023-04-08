@@ -75,7 +75,7 @@ export class ProductService {
 
     //se procede a comprobar si el producto y la talla ya existe
     const prodSizeExist = await this.productRepository.findOne({
-      where: { name: createProductDto.name, size: createProductDto.size}
+      where: { name: createProductDto.name, size: createProductDto.size },
     });
 
     //si la marca no existe dara un error
@@ -92,12 +92,12 @@ export class ProductService {
         HttpStatus.CONFLICT,
       );
 
-        // si el producto y la talla ya existe dara un error
+    // si el producto y la talla ya existe dara un error
     if (prodSizeExist)
-    throw new HttpException(
-      `El producto con el nombre y talla '${createProductDto.name}', '${createProductDto.size}' ya existe.`,
-      HttpStatus.CONFLICT,
-    );
+      throw new HttpException(
+        `El producto con el nombre y talla '${createProductDto.name}', '${createProductDto.size}' ya existe.`,
+        HttpStatus.CONFLICT,
+      );
 
     //si el sku ya existe dara un error
     if (skuExist)
@@ -178,8 +178,7 @@ export class ProductService {
     return data;
   }
 
-  async findRelationSizes(id: string): Promise<GetRelationSizes>{
-
+  async findRelationSizes(id: string): Promise<GetRelationSizes> {
     //Realizamos la busqueda del brand mediante su id en la base de datos
     const findProduct = await this.productRepository.findOne({
       relations: ['brand', 'category'],
@@ -197,16 +196,15 @@ export class ProductService {
       relations: ['brand', 'category'],
       where: { name: findProduct.name, stock: MoreThan(0) }
     });
-    
-    const relation_size = relatedSizes.map(p => p.size);
+
+    const relation_size = relatedSizes.map((p) => p.size);
 
     const response = new GetRelationSizes(relation_size);
 
-    return response
-
+    return response;
   }
-  
-  async findNameSize(id: string, size: string): Promise<GetProductDto>{
+
+  async findNameSize(id: string, size: string): Promise<GetProductDto> {
     //Realizamos la busqueda del brand mediante su id en la base de datos
     const findProduct = await this.productRepository.findOne({
       relations: ['brand', 'category'],
@@ -221,7 +219,7 @@ export class ProductService {
 
     const findNameSize = await this.productRepository.findOne({
       relations: ['brand', 'category'],
-      where: { name: findProduct.name, delete_at: null , size: size},
+      where: { name: findProduct.name, delete_at: null, size: size },
     });
 
     if (!findNameSize)
@@ -229,10 +227,9 @@ export class ProductService {
         `El producto '${findProduct.name}' con la talla '${size}' no fue encontrado`,
         HttpStatus.NOT_FOUND,
       );
-    
-    const data = plainToInstance(GetProductDto, findNameSize)
+    const data = plainToInstance(GetProductDto, findNameSize);
 
-    return data
+    return data;
   }
 
   //* Método para encontrar un producto (product) no eliminado mediante su id(uuid)
@@ -272,9 +269,9 @@ export class ProductService {
         HttpStatus.NOT_FOUND,
       );
 
-      //se procede a comprobar si el producto y la talla ya existe
+    //se procede a comprobar si el producto y la talla ya existe
     const prodSizeExist = await this.productRepository.findOne({
-      where: { name: updateProductDto.name, size: updateProductDto.size}
+      where: { name: updateProductDto.name, size: updateProductDto.size },
     });
 
     if (prodSizeExist && (prodSizeExist.size !== productToUpdate.size || prodSizeExist.name !== productToUpdate.name))
@@ -585,7 +582,10 @@ export class ProductService {
   }
 
   //? (GET) - Obtener productos según ID de la marca
-  async findAllByIdBrand(id: string): Promise<GetProductByIdBrandDto[]> {
+  async findAllByIdBrand(id: string, { limit, page }: PaginationQueryDto) {
+    const total = await this.productRepository.count();
+    const pages = Math.ceil(total / limit);
+
     const dataList = await this.productRepository.find({
       relations: ['brand', 'category'],
       where: {
@@ -596,15 +596,24 @@ export class ProductService {
     });
 
     // limpiar el arreglo de imagenes
-    const data = dataList.map((p) =>
-      plainToInstance(GetProductByIdBrandDto, p),
-    );
+    const productsData = dataList.map((p) => plainToInstance(GetProductDto, p));
+
+    const data: PaginationResponseDto<GetProductDto[]> = {
+      totalPages: pages,
+      actualPage: page,
+      nextPage: page < pages && pages > 0 ? page + 1 : null,
+      prevPage: page > 1 ? page - 1 : null,
+      data: productsData,
+    };
 
     return data;
   }
 
   //? (GET) - Obtener productos según ID de la marca
-  async findAllByIdCategory(id: string): Promise<GetProductByIdCategoryDto[]> {
+  async findAllByIdCategory(id: string, { limit, page }: PaginationQueryDto) {
+    const total = await this.productRepository.count();
+    const pages = Math.ceil(total / limit);
+
     const dataList = await this.productRepository.find({
       relations: ['brand', 'category'],
       where: {
@@ -614,10 +623,17 @@ export class ProductService {
       },
     });
 
-    // limpiar el arreglo de imagenes
-    const data = dataList.map((p) =>
-      plainToInstance(GetProductByIdCategoryDto, p),
-    );
+    // limpiar el arreglo
+    const productsData = dataList.map((p) => plainToInstance(GetProductDto, p));
+
+    // respuesta
+    const data: PaginationResponseDto<GetProductDto[]> = {
+      totalPages: pages,
+      actualPage: page,
+      nextPage: page < pages && pages > 0 ? page + 1 : null,
+      prevPage: page > 1 ? page - 1 : null,
+      data: productsData,
+    };
 
     return data;
   }
