@@ -11,6 +11,9 @@ export class ProductImageDto {
   name: string;
 
   @Expose()
+  size: string;
+
+  @Expose()
   @Transform(({ value }) => plainToInstance(ImageDto, value))
   images: Image[];
 }
