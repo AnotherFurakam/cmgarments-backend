@@ -1,7 +1,7 @@
-import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Customer } from 'src/model/customer.entity';
-import { Repository } from 'typeorm';
+import { QueryFailedError, Repository, TypeORMError } from 'typeorm';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
 import { compare, hash } from 'bcrypt';
@@ -9,7 +9,6 @@ import { CustomerResponseDto } from './dto/customer-response.dto';
 import { plainToInstance } from 'class-transformer';
 import { LoginResponseDto } from './dto/login-response.dto';
 import { JwtService } from '@nestjs/jwt';
-import { jwtConstants } from './jwt.constants';
 
 @Injectable()
 export class AuthService {
@@ -28,20 +27,30 @@ export class AuthService {
     const { password } = registerDto;
     const plainToHash = await hash(password, 10);
     registerDto = { ...registerDto, password: plainToHash };
-    const createdCustomer = await this.customerRepository.save(registerDto);
-    return plainToInstance(CustomerResponseDto, createdCustomer);
+    const createdCustomer = await this.customerRepository.save(registerDto)
+      .then((response) => response)
+      .catch((err: QueryFailedError) => {
+        const detail: string = err.driverError.detail
+        const constraints = ['email', 'dni']
+        constraints.forEach(c => {
+          if (detail.includes(c)) {
+            throw new BadRequestException(`El ${c} ya existe`)
+          }
+        })
+      })
+    return plainToInstance(CustomerResponseDto, createdCustomer)
   }
 
   async login(loginDto: LoginDto) {
     const { email, password } = loginDto;
     const findUser = await this.customerRepository.findOne({
-      where:{
+      where: {
         email
       }
     });
     if (!findUser) throw new NotFoundException("Usuario no encontrado");
 
-    const checkPassword = await compare(password, findUser.password) 
+    const checkPassword = await compare(password, findUser.password)
 
     if (!checkPassword) throw new ForbiddenException("Email o contraseña incorrecta");
 
