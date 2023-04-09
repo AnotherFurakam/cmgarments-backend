@@ -15,21 +15,21 @@ import { SupplierService } from 'src/supplier/supplier.service';
 import { EntranceController } from './entrance.controller';
 import { EntranceService } from './entrance.service';
 import { ProductModule } from '../product/product.module';
+import { ProductService } from 'src/product/product.service';
+import { PurchaseDetailService } from 'src/purchase_detail/purchase_detail.service';
+import { PurchaseDetailModule } from 'src/purchase_detail/purchase_detail.module';
+import { PurchaseDetailController } from 'src/purchase_detail/purchase_detail.controller';
+import { Purchase_detail } from 'src/model/purchase_detail.entity';
 
 //? en la propiedad imports colocamos en modulo de producto para utilizar el servicio de producto
 //* se podria colocar en la propiedad provider el servicio pero el servicio de producto utiliza otro servicio
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Entrance, Product, Supplier, Brand, Category]),
+    TypeOrmModule.forFeature([Entrance, Product, Supplier, Purchase_detail]),
     ProductModule,
   ],
-  providers: [EntranceService, SupplierService, BrandService, CategoryService],
-  controllers: [
-    EntranceController,
-    ProductController,
-    SupplierController,
-    BrandController,
-    CategoryController,
-  ],
+  providers: [EntranceService],
+  controllers: [EntranceController],
+  exports: [EntranceService],
 })
 export class EntranceModule {}

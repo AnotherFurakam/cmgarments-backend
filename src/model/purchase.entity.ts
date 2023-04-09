@@ -19,7 +19,8 @@ export class Purchase {
   @PrimaryGeneratedColumn('uuid')
   id_purchase: string;
 
-  @Generated()
+  @Column()
+  @Generated('increment')
   nro: number;
 
   @Column({ type: 'varchar', length: 1000 })
