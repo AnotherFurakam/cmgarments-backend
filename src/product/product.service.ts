@@ -581,6 +581,7 @@ export class ProductService {
   //* Función para obtener los productos recientes
   async getRecentsProducts(quantity: number): Promise<ProductImageDto[]> {
     const productos: Product[] = await this.productRepository.find({
+      where: {state: true},
       relations: ['images'],
       take: quantity,
       order: {
