@@ -5,11 +5,13 @@ import {
   Entity,
   JoinColumn,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
 import { Product } from './product.entity';
 import { Purchase } from './purchase.entity';
+import { Entrance } from './entrance.entity';
 
 @Entity({ name: 'purchase_detail' })
 export class Purchase_detail {
@@ -29,6 +31,9 @@ export class Purchase_detail {
   @ManyToOne(() => Purchase, (purchase) => purchase.purchase_detail)
   @JoinColumn({ name: 'id_purchase' })
   id_purchase: Purchase;
+
+  @OneToMany(() => Entrance, (entrance) => entrance.purchase_detail)
+  entrance: Entrance[];
 
   @CreateDateColumn()
   create_at: Date;
