@@ -33,6 +33,7 @@ import { ProductImageDto } from './product-image-response.dto';
 import { GetProductByIdBrandDto } from './dto/get-product-brand.dto';
 import { GetProductByIdCategoryDto } from './dto/get-product-category.dto';
 import { GetRelationSizes } from './dto/get-relation-sizes.dto';
+import { validate as isUuidValid } from 'uuid';
 
 @Injectable()
 export class ProductService {
@@ -234,6 +235,14 @@ export class ProductService {
 
   //* Método para encontrar un producto (product) no eliminado mediante su id(uuid)
   async findOne(id: string): Promise<GetProductDto> {
+    // Validamos si el ID proporcionado tiene un formato UUID válido
+    if (!isUuidValid(id)) {
+      throw new HttpException(
+        `El producto con el id '${id}' no fue encontrado`,
+        HttpStatus.NOT_FOUND,
+      );
+    }
+
     //Realizamos la busqueda del brand mediante su id en la base de datos
     const findProduct = await this.productRepository.findOne({
       relations: ['brand', 'category'],
