@@ -22,6 +22,6 @@ export class Brand {
   @DeleteDateColumn()
   delete_at: Date;
 
-  @OneToMany(() => Product, (product) => product.id_product)
+  @OneToMany(() => Product, (product) => product.brand)
   products: Product[];
 }

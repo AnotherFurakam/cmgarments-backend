@@ -49,11 +49,11 @@ export class Product {
 
   //? ManyToOne
   @ManyToOne(() => Brand, (brand) => brand.products)
-  @JoinColumn({ name: 'id_brand' })
+  @JoinColumn({ name: 'brand' })
   brand: Brand;
 
   @ManyToOne(() => Category, (category) => category.products)
-  @JoinColumn({ name: 'id_category' })
+  @JoinColumn({ name: 'category' })
   category: Category;
 
   // //? OneToMany
@@ -62,8 +62,9 @@ export class Product {
 
   @OneToMany(
     () => Purchase_detail,
-    (purchase_detail) => purchase_detail.id_purchase_detail,
+    (purchase_detail) => purchase_detail.id_product,
   )
+  // @JoinColumn({ name: 'purchase_detail' })
   purchase_detail: Purchase_detail[];
 
   @OneToMany(() => Image, (image) => image.product)

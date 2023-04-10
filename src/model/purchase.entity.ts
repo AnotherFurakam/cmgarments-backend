@@ -47,7 +47,8 @@ export class Purchase {
 
   @OneToMany(
     () => Purchase_detail,
-    (purchase_detail) => purchase_detail.id_purchase_detail,
+    (purchase_detail) => purchase_detail.id_purchase,
   )
+  @JoinColumn({ name: 'purchase_detail' })
   purchase_detail: Purchase_detail[];
 }

@@ -46,4 +46,8 @@ export class Entrance {
 
   @DeleteDateColumn()
   delete_at: Date;
+
+  get total_price(): number {
+    return this.units * this.unit_cost;
+  }
 }

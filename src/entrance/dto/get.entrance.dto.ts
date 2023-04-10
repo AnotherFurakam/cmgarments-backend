@@ -20,4 +20,7 @@ export class GetEntranceDto {
     toClassOnly: true,
   })
   create_at: Date;
+
+  @Expose()
+  total_price: number;
 }

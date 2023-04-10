@@ -1,34 +1,34 @@
-import { Exclude, Expose, Transform } from "class-transformer";
-import { Length } from "class-validator";
+import { Exclude, Expose, Transform } from 'class-transformer';
+import { Length } from 'class-validator';
 
 @Exclude()
 export class GetSupplierDto {
-    @Expose()
-    id_supplier: string;
+  @Expose()
+  id_supplier: string;
 
-    @Expose()
-    name: string;
-    
-    @Expose()
-    description: string;
+  @Expose()
+  name: string;
 
-    @Expose()
-    address: string;
+  @Expose()
+  description: string;
 
-    @Length(9, 9)
-    @Expose()
-    phone: string;
+  @Expose()
+  address: string;
 
-    @Expose()
-    ruc: string;
+  @Length(9, 9)
+  @Expose()
+  phone: string;
 
-    @Expose()
-    state: boolean;
+  @Expose()
+  ruc: string;
 
-    @Expose()
-    @Transform(({ value }) => value.toLocaleString('en-GB'), {
-        toPlainOnly: true,
-        toClassOnly: true,
-    })
-    create_at: Date;
+  @Expose()
+  state: boolean;
+
+  @Expose()
+  @Transform(({ value }) => value.toLocaleString('en-GB'), {
+    toPlainOnly: true,
+    toClassOnly: true,
+  })
+  create_at: Date;
 }
