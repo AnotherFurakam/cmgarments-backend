@@ -56,13 +56,16 @@ export class EntranceService {
         HttpStatus.CONFLICT,
       );
 
-    productExist.stock = productExist.stock + createEntranceDto.units;
-    await this.productRepository.save(productExist);
-
     //ya se crea la entrada y se guarda en la database
     const entranceToRegist = this.entranceRepository.create(createEntranceDto);
     entranceToRegist.purchase_detail = purDetailExist;
     const createEntrance = await this.entranceRepository.save(entranceToRegist);
+
+    purDetailExist.received = true;
+    await this.purDetailRepository.save(purDetailExist);
+
+    productExist.stock = productExist.stock + createEntranceDto.units;
+    await this.productRepository.save(productExist);
 
     return plainToInstance(GetEntranceDto, createEntrance);
   }

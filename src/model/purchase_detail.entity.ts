@@ -24,6 +24,9 @@ export class Purchase_detail {
   @Column({ type: 'decimal', precision: 10, scale: 2 })
   price: number;
 
+  @Column({ default: false })
+  received?: boolean;
+
   @ManyToOne(() => Product, (product) => product.purchase_detail)
   @JoinColumn({ name: 'id_product' })
   id_product: Product;

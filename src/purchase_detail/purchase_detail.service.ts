@@ -57,6 +57,20 @@ export class PurchaseDetailService {
       purchaseDetailToRegist,
     );
 
+    const suma =
+      createPurchaseDetailDto.price * createPurchaseDetailDto.units +
+      Number(purchase.total_price);
+
+    // console.log({
+    //   n1: createPurchaseDetailDto.price,
+    //   n2: createPurchaseDetailDto.units,
+    //   suma,
+    // });
+
+    purchase.total_price = suma;
+
+    await this.purchaseRepository.save(purchase);
+
     return plainToInstance(GetPurchaseDetailDto, createPurchase);
   }
 
