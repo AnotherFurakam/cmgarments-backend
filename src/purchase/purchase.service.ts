@@ -96,6 +96,55 @@ export class PurchaseService {
     return plainToClass(GetPurchaseDto, findPurchase);
   }
 
+  async findByNumber(num: number) {
+    // const purchase = await this.purchaseRepository.findOne({
+    //   relations: ['id_supplier'],
+    //   where: { nro: num },
+    // });
+
+    const purchase = await this.purchaseRepository
+      .createQueryBuilder('purchase')
+      .leftJoinAndSelect('purchase.id_supplier', 'supplier')
+      .leftJoinAndSelect('purchase.purchase_detail', 'purchase_detail')
+      .leftJoinAndSelect('purchase_detail.id_product', 'product')
+      .leftJoinAndSelect('product.brand', 'brand')
+      .leftJoinAndSelect('product.category', 'category')
+      .select([
+        'purchase.id_purchase',
+        'purchase.nro',
+        'purchase.description',
+        'purchase.total_price',
+        'purchase.date_purchase',
+        'purchase.create_at',
+        'supplier.id_supplier',
+        'supplier.name',
+        'supplier.address',
+        'supplier.phone',
+        'supplier.ruc',
+        'purchase_detail.id_purchase_detail',
+        'purchase_detail.units',
+        'purchase_detail.price',
+        'product.name',
+        'product.color',
+        'brand.id_brand',
+        'brand.name',
+        'category.id_category',
+        'category.name',
+      ])
+      .where('purchase.nro = :nro', { nro: num })
+      .take(1)
+      .getOne();
+
+    if (!purchase)
+      throw new HttpException(
+        `La compra con número '${num}' no se encontró`,
+        HttpStatus.NOT_FOUND,
+      );
+
+    return purchase;
+    // return plainToClass(GetPurchaseDto, purchase);
+  }
+
   //* Método para actualizar una compra
   async update(
     id: string,

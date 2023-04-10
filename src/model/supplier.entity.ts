@@ -3,6 +3,7 @@ import {
   CreateDateColumn,
   DeleteDateColumn,
   Entity,
+  JoinColumn,
   OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
@@ -47,6 +48,7 @@ export class Supplier {
   // entrance: Entrance[];
 
   @OneToMany(() => Purchase, (purchase) => purchase.id_purchase)
+  @JoinColumn({ name: 'purchase' })
   purchase: Purchase[];
 
   @OneToMany(

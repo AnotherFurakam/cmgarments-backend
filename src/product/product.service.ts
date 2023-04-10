@@ -30,8 +30,6 @@ import { SearchByEnum } from './dto/search-by.enum';
 import { SearchDto } from './dto/search.dto';
 import { FilterByDateDto } from './dto/filtro-by-fecha.dto';
 import { ProductImageDto } from './product-image-response.dto';
-import { GetProductByIdBrandDto } from './dto/get-product-brand.dto';
-import { GetProductByIdCategoryDto } from './dto/get-product-category.dto';
 import { GetRelationSizes } from './dto/get-relation-sizes.dto';
 import { validate as isUuidValid } from 'uuid';
 
@@ -195,7 +193,7 @@ export class ProductService {
     //se procede a buscar las tallas relaciondas
     const relatedSizes = await this.productRepository.find({
       relations: ['brand', 'category'],
-      where: { name: findProduct.name, stock: MoreThan(0) }
+      where: { name: findProduct.name, stock: MoreThan(0) },
     });
 
     const relation_size = relatedSizes.map((p) => p.size);
@@ -283,11 +281,15 @@ export class ProductService {
       where: { name: updateProductDto.name, size: updateProductDto.size },
     });
 
-    if (prodSizeExist && (prodSizeExist.size !== productToUpdate.size || prodSizeExist.name !== productToUpdate.name))
-    throw new HttpException(
-      `El producto con el nombre y talla '${updateProductDto.name}', '${updateProductDto.size}' ya existe.`,
-      HttpStatus.CONFLICT,
-    );
+    if (
+      prodSizeExist &&
+      (prodSizeExist.size !== productToUpdate.size ||
+        prodSizeExist.name !== productToUpdate.name)
+    )
+      throw new HttpException(
+        `El producto con el nombre y talla '${updateProductDto.name}', '${updateProductDto.size}' ya existe.`,
+        HttpStatus.CONFLICT,
+      );
 
     //en caso de que el stock sea 0, el producto de deshabilitara
     if (updateProductDto.stock == 0) {
