@@ -59,6 +59,7 @@ export class PurchaseController {
   ) {
     return this.purchaseService.findAll(paginationQuery);
   }
+
   // Obtener compra por id;
   @Get(':id')
   @ApiResponse({
@@ -71,6 +72,20 @@ export class PurchaseController {
   })
   findOne(@Param('id') id: string) {
     return this.purchaseService.findOne(id);
+  }
+
+  // Obtener compra por id;
+  @Get('/number/:nro')
+  @ApiResponse({
+    status: 200,
+    description: 'Registro obtenido satisfactoriamente',
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'No se encontró ningun registro solicitado',
+  })
+  findByNumber(@Param('nro') nro: number) {
+    return this.purchaseService.findByNumber(nro);
   }
 
   //Actualizar compra:

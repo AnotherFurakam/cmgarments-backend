@@ -85,6 +85,14 @@ export class EntranceService {
       order: { create_at: 'ASC' },
     });
 
+    // const entranceList = await this.entranceRepository
+    //   .createQueryBuilder('entrance')
+    //   .addSelect('entrance.units * entrance.unit_cost', 'total_price')
+    //   .orderBy('entrance.create_at', 'DESC')
+    //   .take(limit)
+    //   .skip((page - 1) * limit)
+    //   .getMany();
+
     const data = entranceList.map((e: Entrance) =>
       plainToInstance(GetEntranceDto, e),
     );

@@ -29,7 +29,7 @@ export class Purchase_detail {
   id_product: Product;
 
   @ManyToOne(() => Purchase, (purchase) => purchase.purchase_detail)
-  @JoinColumn({ name: 'id_purchase' })
+  @JoinColumn({ name: 'purchase' })
   id_purchase: Purchase;
 
   @OneToMany(() => Entrance, (entrance) => entrance.purchase_detail)
