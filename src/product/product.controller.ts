@@ -195,6 +195,19 @@ export class ProductController {
     return this.productService.removeImage(id);
   }
 
+  @Delete('image/all/:id')
+  @ApiResponse({
+    status: 200,
+    description: 'Imagenes eliminadas satisfactoriamente',
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'No se encontraron las Imagenes solicitadas',
+  })
+  removeAllImage(@Param('id', ParseUUIDPipe) id: string) {
+    return this.productService.removeAllImage(id);
+  }
+
   @Get('count/quantity')
   @ApiResponse({
     status: 200,

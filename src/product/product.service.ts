@@ -454,6 +454,36 @@ export class ProductService {
     return data;
   }
 
+  async removeAllImage(id: string) {
+    // verificar si el producto existe
+    await this.findOne(id);
+  
+    // obtener todas las imagenes
+    const images = await this.imageRepository.find({
+      where: {
+        product: {
+          id_product: id,
+        },
+      },
+    });
+  
+    // Eliminar todas las imágenes relacionadas con el id del producto
+    for (const image of images) {
+      try {
+        await this.removeImage(image.id_image);
+      } catch (error) {
+        if (error instanceof NotFoundException) {
+          // Ignora la excepción si la imagen no existe
+          continue;
+        }
+        throw error;
+      }
+    }
+  
+    return { message: `Imagenes del producto ${id} eliminadas.` };
+  }
+  
+
   //? (GET) - Obtener cantidad de PRODUCTOS
   async getQuantity() {
     const total = await this.productRepository.count();
