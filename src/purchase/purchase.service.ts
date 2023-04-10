@@ -40,6 +40,7 @@ export class PurchaseService {
 
     return plainToInstance(GetPurchaseDto, createPurchase);
   }
+
   // Obtener todas las compras
   async findAll({
     limit,
@@ -97,11 +98,6 @@ export class PurchaseService {
   }
 
   async findByNumber(num: number) {
-    // const purchase = await this.purchaseRepository.findOne({
-    //   relations: ['id_supplier'],
-    //   where: { nro: num },
-    // });
-
     const purchase = await this.purchaseRepository
       .createQueryBuilder('purchase')
       .leftJoinAndSelect('purchase.id_supplier', 'supplier')
@@ -124,6 +120,7 @@ export class PurchaseService {
         'purchase_detail.id_purchase_detail',
         'purchase_detail.units',
         'purchase_detail.price',
+        'purchase_detail.received',
         'product.name',
         'product.color',
         'brand.id_brand',

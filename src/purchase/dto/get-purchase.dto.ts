@@ -19,6 +19,9 @@ export class GetPurchaseDto {
   @Expose()
   date_purchase: Date;
 
+  @Expose()
+  received?: boolean;
+
   @Transform(({ value }) => plainToInstance(GetSupplierDto, value))
   @Expose()
   id_supplier: GetSupplierDto;
