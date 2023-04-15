@@ -1,4 +1,5 @@
-import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import { Column, CreateDateColumn, Entity, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import { Sale } from "./sale.entity";
 
 @Entity({name: 'customer'})
 export class Customer {
@@ -32,5 +33,8 @@ export class Customer {
 
   @Column({type: 'varchar', length: 225, nullable: false})
   password: string;
+
+  @OneToMany(() => Sale, (sale) => sale.customer)
+  sale: Sale[];
 
 }

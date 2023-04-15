@@ -16,6 +16,7 @@ import { PurchaseDetailModule } from './purchase_detail/purchase_detail.module';
 import { CloudinaryModule } from './cloudinary/cloudinary.module';
 import { ProductSupplierModule } from './productsupplier/productsupplier.module';
 import { AuthModule } from './auth/auth.module';
+import { SaleModule } from './sale/sale.module';
 
 config();
 @Module({
@@ -30,6 +31,7 @@ config();
       entities: [__dirname + '/**/*.entity{.ts,.js}'],
       synchronize: true,
     }),
+    SaleModule,
     EntranceModule,
     BrandModule,
     ProductModule,
