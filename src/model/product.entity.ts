@@ -14,6 +14,7 @@ import { Category } from './category.entity';
 import { Image } from './image.entity';
 import { Purchase_detail } from './purchase_detail.entity';
 import { ProductSupplier } from './productsupplier.entity';
+import { SaleDetail } from './sale_detail.entity';
 
 @Entity()
 export class Product {
@@ -84,4 +85,7 @@ export class Product {
     (product_supplier) => product_supplier.product,
   )
   products_suppliers: ProductSupplier[];
+
+  @OneToMany(() => SaleDetail, (sale_detail) => sale_detail.sale)
+    sale_detail: SaleDetail[];
 }
