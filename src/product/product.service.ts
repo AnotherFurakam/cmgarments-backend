@@ -181,7 +181,7 @@ export class ProductService {
     //Realizamos la busqueda del brand mediante su id en la base de datos
     const findProduct = await this.productRepository.findOne({
       relations: ['brand', 'category'],
-      where: { id_product: id, delete_at: null },
+      where: { id_product: id, delete_at: null, state: true },
     });
 
     if (!findProduct)
@@ -193,7 +193,7 @@ export class ProductService {
     //se procede a buscar las tallas relaciondas
     const relatedSizes = await this.productRepository.find({
       relations: ['brand', 'category'],
-      where: { name: findProduct.name, stock: MoreThan(0) },
+      where: { name: findProduct.name, stock: MoreThan(0), state: true },
     });
 
     const relation_size = relatedSizes.map((p) => p.size);
