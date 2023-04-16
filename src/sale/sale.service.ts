@@ -12,6 +12,12 @@ import { PaginationQueryDto, PaginationResponseDto } from 'src/utils/paginate/dt
 import { plainToInstance } from 'class-transformer';
 import { GetOnlySaleDto } from './dto/get-onlysale.dto';
 import { GetSaleDetailDto } from './dto/get-saleDetail.dto';
+import * as path from 'path';
+import fs from 'fs';
+import { google } from 'googleapis';
+import pdfMake from "pdfmake/build/pdfmake";
+import pdfFonts from "pdfmake/build/vfs_fonts";
+pdfMake.vfs = pdfFonts.pdfMake ? pdfFonts.pdfMake.vfs : pdfFonts.vfs;
 
 @Injectable()
 export class SaleService {
@@ -24,7 +30,7 @@ export class SaleService {
     private customerRepository: Repository<Customer>,
     private readonly entityManager: EntityManager,
 ) {}
-
+    
     async create(createSaleDto: CreateSaleDto): Promise<GetSaleDto> {
     return await this.entityManager.transaction(
         async (transactionalEntityManager) => {
@@ -92,6 +98,9 @@ export class SaleService {
             .toString();
         await this.saleRepository.save(savedSale);
 
+        // Enviar email al cliente por la venta realizada
+        await this.sendEmail(savedSale, saleDetails, customer);
+
         // Convertir la venta y sus detalles a GetSaleDto
         const getSaleDto = new GetSaleDto();
         Object.assign(getSaleDto, savedSale);
@@ -108,6 +117,158 @@ export class SaleService {
     }
     );
     }
+
+    async createPdf(sale: Sale, saleDetails: SaleDetail[], customer: Customer): Promise<Buffer> {
+        pdfMake.fonts = {
+            Roboto: {
+                normal: "Roboto-Medium.ttf",
+                bold: "Roboto-Medium.ttf",
+                italics: "Roboto-Medium.ttf",
+                bolditalics: "Roboto-Medium.ttf",
+            },
+        };          
+        const docDefinition = {
+            content: [
+                {
+                text: 'Detalle de la Venta',
+                style: 'header',
+                alignment: 'center',
+                },
+                {
+                text: `Venta ID: ${sale.id_sale}`,
+                style: 'subheader',
+                },
+                {
+                text: `Cliente: ${customer.email}`,
+                style: 'subheader',
+                },
+                {
+                text: `Fecha: ${new Date().toLocaleDateString()}`,
+                style: 'subheader',
+                },
+                {
+                style: 'table',
+                table: {
+                    headerRows: 1,
+                    widths: ['*', '*', '*', '*', '*'],
+                    body: [
+                    [
+                        { text: 'Producto', style: 'tableHeader' },
+                        { text: 'Talla', style: 'tableHeader' },
+                        { text: 'Unidades', style: 'tableHeader' },
+                        { text: 'Precio Unitario', style: 'tableHeader' },
+                        { text: 'Total', style: 'tableHeader' },
+                    ],
+                    ...saleDetails.map((detail) => [
+                        detail.product.name,
+                        detail.product.size,
+                        detail.units,
+                        `$${detail.price}`,
+                        `$${detail.price * detail.units}`,
+                    ]),
+                    [
+                        '',
+                        '',
+                        '',
+                        { text: 'Total:', style: 'tableHeader' },
+                        { text: `$${sale.total_cost}`, style: 'tableHeader' },
+                    ],
+                    ],
+                },
+                },
+            ],
+            styles: {
+                header: {
+                    fontSize: 24,
+                    bold: true,
+                    margin: [0, 20, 0, 20],
+                    decoration: 'underline',
+                },
+                subheader: {
+                    fontSize: 14,
+                    bold: true,
+                    margin: [0, 5, 0, 5],
+                },
+                table: {
+                    margin: [0, 15, 0, 15],
+                },
+                tableHeader: {
+                    bold: true,
+                    fontSize: 12,
+                    fillColor: '#f1f1f1',
+                    alignment: 'center',
+                },
+            },
+        };          
+        
+        return new Promise((resolve, reject) => {
+            const chunks: Uint8Array[] = [];
+            const pdfDoc = pdfMake.createPdf(docDefinition);
+        
+            pdfDoc.getBuffer((buffer) => {
+            resolve(Buffer.from(buffer));
+            });
+        });
+    } 
+
+    async sendEmail(sale: Sale, saleDetails: SaleDetail[], customer: Customer) {
+
+        // Crear el archivo PDF
+        const pdfBuffer = await this.createPdf(sale, saleDetails, customer);
+
+        // Carga el archivo de credenciales de la API de Google.
+        const credentialsPath = path.join(process.cwd(), 'src', 'json', 'client_secret_882418923951-hr9l43ga64qmvjgbh44ce0i2pijjchoa.apps.googleusercontent.com.json');
+        const credentials = JSON.parse(fs.readFileSync(credentialsPath, 'utf-8'));
+        
+        // Carga el archivo token.json
+        const tokenPath = path.join(process.cwd(), 'src', 'json', 'token.json');
+        const token = JSON.parse(fs.readFileSync(tokenPath, 'utf-8'));
+        
+        // Crea un cliente OAuth2 con las credenciales proporcionadas.
+        const oauth2Client = new google.auth.OAuth2(
+            credentials.web.client_id,
+            credentials.web.client_secret,
+            credentials.web.redirect_uris[0]
+        );
+    
+        // Establece el token de acceso.
+        oauth2Client.setCredentials(token);
+    
+        // Crea una instancia de Gmail.
+        const gmail = google.gmail({ version: 'v1', auth: oauth2Client });
+
+        // Construye el mensaje de correo electrónico en formato MIME con el archivo PDF adjunto.
+        const boundary = 'someboundarystring';
+        const rawMessage = `Content-Type: multipart/mixed; boundary=${boundary}\n` +
+            `From: Cmgarments060@gmail.com\n` +
+            `To: ${customer.email}\n` +
+            `Subject: Venta realizada\n\n` +
+            `--${boundary}\n` +
+            `Content-Type: text/plain; charset="UTF-8"\n\n` +
+            `Estimado ${customer.email},\n\nLe informamos que se ha realizado una venta con los siguientes detalles:\n\nVenta ID: ${sale.id_sale}\nTotal: $${sale.total_cost}\n\nGracias por su preferencia y por elegir nuestros productos. Estamos seguros de que disfrutará de su compra y de la calidad de nuestros productos. Su satisfacción es nuestra prioridad y nos enorgullecemos de ofrecer garantía y soporte en todos nuestros productos.\n\nEn este correo electrónico, encontrará adjunto un archivo PDF con el detalle completo de su compra. Si tiene alguna pregunta o necesita ayuda, no dude en ponerse en contacto con nosotros.\n\nAgradecemos su confianza y esperamos seguir siendo su opción preferida en el futuro.\n\nAtentamente,\n\nCMGarments\n\n` +
+            `--${boundary}\n` +
+            `Content-Type: application/pdf\n` +
+            `Content-Disposition: attachment; filename="venta-${sale.id_sale}.pdf"\n` +
+            `Content-Transfer-Encoding: base64\n\n` +
+            pdfBuffer.toString('base64') + '\n' +
+            `--${boundary}--`;
+
+        // Codifica el mensaje en formato Base64.
+        const encodedMessage = Buffer.from(rawMessage).toString('base64').replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+
+        // Envía el correo electrónico utilizando la API de Gmail.
+        try {
+            const response = await gmail.users.messages.send({
+            userId: 'me',
+            requestBody: {
+                raw: encodedMessage,
+            },
+            });
+            console.log('Email enviado con éxito:', response.data);
+        } catch (error) {
+            console.error('Error al enviar el correo electrónico:', error);
+        }
+}
 
     async findAll({ limit, page }: PaginationQueryDto) {
         const total = await this.saleRepository.count();
