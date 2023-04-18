@@ -82,7 +82,7 @@ export class SaleService {
         // Crear la venta
         const sale = new Sale();
         sale.customer = customer;
-        sale.total_cost = '0';
+        sale.total_cost = "0";
 
         const savedSale = await this.saleRepository.save(sale);
 
@@ -94,7 +94,7 @@ export class SaleService {
         
         // Actualizar el costo total de la venta
         savedSale.total_cost = saleDetails
-            .reduce((total, detail) => total + detail.price * detail.units, 0)
+            .reduce((total, detail) => parseFloat(total.toString()) + (parseFloat(detail.price) * detail.units), 1)
             .toString();
         await this.saleRepository.save(savedSale);
 
@@ -109,7 +109,8 @@ export class SaleService {
         Object.assign(customerResponse, customer);
         getSaleDto.customer = customerResponse;
 
-        getSaleDto.sale_detail = saleDetails;
+        getSaleDto.sale_detail = saleDetails
+        
 
         const data = plainToInstance(GetSaleDto, getSaleDto);
 
@@ -164,7 +165,7 @@ export class SaleService {
                         detail.product.size,
                         detail.units,
                         `$${detail.price}`,
-                        `$${detail.price * detail.units}`,
+                        `$${parseFloat(detail.price) * detail.units}`,
                     ]),
                     [
                         '',

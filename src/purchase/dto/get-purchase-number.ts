@@ -14,8 +14,7 @@ export class GetPurchaseNumber {
   description: string;
 
   @Expose()
-  @Transform(({ value }) => parseFloat(value))
-  total_price: number;
+  total_price: string;
 
   @Expose()
   date_purchase: Date;

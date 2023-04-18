@@ -31,7 +31,7 @@ export class Product {
   color: string;
 
   @Column({ type: 'decimal', precision: 10, scale: 2 })
-  price: number;
+  price: string;
 
   @Column({ type: 'integer', default: 0 })
   stock: number;

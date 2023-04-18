@@ -46,12 +46,11 @@ export class CreateProductDto {
   color: string;
 
   @IsNotEmpty()
-  @Min(0)
   @ApiProperty({
     description: 'Precio del producto al registrar',
-    type: Number,
+    type: String,
   })
-  price: number;
+  price: string;
 
   @Min(0)
   @ApiProperty({

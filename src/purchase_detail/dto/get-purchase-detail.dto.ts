@@ -10,8 +10,7 @@ export class GetPurchaseDetailDto {
   units: number;
 
   @Expose()
-  @Transform(({ value }) => parseFloat(value))
-  price: number;
+  price: string;
 
   @Expose()
   date_purchase: Date;
@@ -30,4 +29,7 @@ export class GetPurchaseDetailDto {
     toClassOnly: true,
   })
   create_at: Date;
+
+  @Expose()
+  received: boolean;
 }

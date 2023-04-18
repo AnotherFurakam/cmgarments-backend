@@ -13,14 +13,10 @@ export class GetPurchaseDto {
   description: string;
 
   @Expose()
-  @Transform(({ value }) => parseFloat(value))
-  total_price: number;
+  total_price: string;
 
   @Expose()
   date_purchase: Date;
-
-  @Expose()
-  received?: boolean;
 
   @Transform(({ value }) => plainToInstance(GetSupplierDto, value))
   @Expose()

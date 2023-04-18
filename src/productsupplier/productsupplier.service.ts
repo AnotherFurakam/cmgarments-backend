@@ -46,6 +46,22 @@ export class ProductSupplierService {
             HttpStatus.CONFLICT,
         );
 
+        // Verificar si ya existe un registro de ProductSupplier con el mismo producto y proveedor
+        const existingProductSupplier = await this.productsupplierRepository.findOne({
+            where: {
+                product: { id_product: createProductSupplierDto.id_product },
+                supplier: { id_supplier: createProductSupplierDto.id_supplier },
+            },
+        });
+
+        // Si ya existe un registro con el mismo producto y proveedor, lanzar un error
+        if (existingProductSupplier) {
+            throw new HttpException(
+            `Ya existe un registro de ProductSupplier con el producto '${createProductSupplierDto.id_product}' y el proveedor '${createProductSupplierDto.id_supplier}'`,
+            HttpStatus.CONFLICT,
+            );
+        }
+
         //ya se crea el producto y se guarda en la database
         const productsupplierToRegist = this.productsupplierRepository.create(createProductSupplierDto);
         //guardamos los objetos con respecto al uid del brand

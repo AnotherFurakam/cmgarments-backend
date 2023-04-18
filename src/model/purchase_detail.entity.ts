@@ -22,7 +22,7 @@ export class Purchase_detail {
   units: number;
 
   @Column({ type: 'decimal', precision: 10, scale: 2 })
-  price: number;
+  price: string;
 
   @Column({ default: false })
   received?: boolean;

@@ -26,11 +26,7 @@ export class Entrance {
   @Column({ type: 'decimal', precision: 10, scale: 2 })
   unit_cost: number;
 
-  //   @ManyToOne(() => Product, (product) => product.entrance)
-  //   @JoinColumn({ name: 'id_product' })
-  //   product: Product;
-
-  @ManyToOne(() => Purchase_detail, (pur_detail) => pur_detail.entrance)
+  @ManyToOne(() => Purchase_detail, (pur) => pur.entrance)
   @JoinColumn({ name: 'id_purchase_detail' })
   purchase_detail: Purchase_detail;
 
@@ -47,7 +43,7 @@ export class Entrance {
   @DeleteDateColumn()
   delete_at: Date;
 
-  get total_price(): number {
-    return this.units * this.unit_cost;
+  get total_price(): string {
+    return (this.units * this.unit_cost).toFixed(2);
   }
 }

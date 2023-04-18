@@ -12,6 +12,7 @@ import { Repository } from 'typeorm';
 import { CreatePurchaseDetailDto } from './dto/create-purchase-detail.dto';
 import { GetPurchaseDetailDto } from './dto/get-purchase-detail.dto';
 import { UpdatePurchaseDetailDto } from './dto/update-purchase-detail.dto';
+import { ProductSupplier } from 'src/model/productsupplier.entity';
 
 @Injectable()
 export class PurchaseDetailService {
@@ -22,6 +23,8 @@ export class PurchaseDetailService {
     private purchaseDetailRepository: Repository<Purchase_detail>,
     @InjectRepository(Product)
     private productRepository: Repository<Product>,
+    @InjectRepository(ProductSupplier)
+    private productsupplierRepository: Repository<ProductSupplier>,
   ) {}
 
   // Crear detalle compra
@@ -39,6 +42,7 @@ export class PurchaseDetailService {
 
     //Validar si la compra existe.
     const purchase = await this.purchaseRepository.findOne({
+      relations: ['id_supplier'],
       where: { id_purchase: createPurchaseDetailDto.id_purchase },
     });
 
@@ -48,26 +52,49 @@ export class PurchaseDetailService {
         HttpStatus.NOT_FOUND,
       );
 
-    const purchaseDetailToRegist = this.purchaseDetailRepository.create(
-      createPurchaseDetailDto,
+    const productS = await this.productsupplierRepository.findOne({
+      relations: ['product', 'supplier'],
+      where: { supplier: {name: purchase.id_supplier.name}, product: {id_product: createPurchaseDetailDto.id_product} },
+    });
+
+    if (!product)
+      throw new HttpException(
+        `El producto con el id '${createPurchaseDetailDto.id_product}' no fue econtrado.`,
+        HttpStatus.NOT_FOUND,
+      );
+
+    if (!productS)
+    throw new HttpException(
+      `El productoSupplier con el id '${createPurchaseDetailDto.id_product}' no fue econtrado.`,
+      HttpStatus.NOT_FOUND,
     );
-    purchaseDetailToRegist.id_purchase = purchase;
-    purchaseDetailToRegist.id_product = product;
+
+      const purchaseDetailToRegist = this.purchaseDetailRepository.create(
+        createPurchaseDetailDto,
+      );
+      purchaseDetailToRegist.id_purchase = purchase;
+      purchaseDetailToRegist.id_product = product;
+
+    var tp = parseFloat(purchase.total_price)
+
+
+    tp += parseFloat(productS.unit_cost)*createPurchaseDetailDto.units
+
+
+    tp = parseFloat(tp.toFixed(2))
+
+    purchase.total_price = tp.toString()
+
+    await this.purchaseRepository.save(purchase);
+
+    
+    purchaseDetailToRegist.price = productS.unit_cost
+
     const createPurchase = await this.purchaseDetailRepository.save(
       purchaseDetailToRegist,
     );
 
-    const suma =
-      createPurchaseDetailDto.price * createPurchaseDetailDto.units +
-      Number(purchase.total_price);
-
-    // console.log({
-    //   n1: createPurchaseDetailDto.price,
-    //   n2: createPurchaseDetailDto.units,
-    //   suma,
-    // });
-
-    purchase.total_price = suma;
+    purchase.total_price = tp.toString()
 
     await this.purchaseRepository.save(purchase);
 
@@ -139,6 +166,7 @@ export class PurchaseDetailService {
   ): Promise<GetPurchaseDetailDto> {
     //Obtenemos el brand que deseamos actualizar
     const purchaseDetailToUpdate = await this.purchaseDetailRepository.findOne({
+      relations: ['id_purchase'],
       where: { id_purchase_detail: id },
     });
     //Si el brand no fue encontrado devolveremos un error indicando que este no fue encontrado
@@ -148,12 +176,46 @@ export class PurchaseDetailService {
         HttpStatus.NOT_FOUND,
       );
 
+    //Validar si la compra existe.
+    const purchase = await this.purchaseRepository.findOne({
+      relations: ['id_supplier'],
+      where: { id_purchase: purchaseDetailToUpdate.id_purchase.id_purchase },
+    });
+
+    if (!purchase)
+      throw new HttpException(
+        `La compra con el id '${purchaseDetailToUpdate.id_product}' no fue econtrado.`,
+        HttpStatus.NOT_FOUND,
+    );
+
+    const productS = await this.productsupplierRepository.findOne({
+      relations: ['product', 'supplier'],
+      where: { supplier: {name: purchase.id_supplier.name}, product: {id_product: updatePurchaseDetailDto.id_product} },
+    });
+
+    var tp = parseFloat(purchase.total_price)
+
+
+    tp -= parseFloat(purchaseDetailToUpdate.price) * purchaseDetailToUpdate.units
+
+    tp += parseFloat(productS.unit_cost) * updatePurchaseDetailDto.units
+
+
+    purchase.total_price = tp.toString()
+
+    await this.purchaseRepository.save(purchase);
+
+    
+
+
     //Si el brand fue encontado actualizaremos la info del brand con el dto
     this.purchaseDetailRepository.merge(
       purchaseDetailToUpdate,
       updatePurchaseDetailDto,
     );
 
+    purchaseDetailToUpdate.price = productS.unit_cost
+    
     //Por último guardamos el brand y retornamos la info actualizada
     const updatedPurchaseDetal = await this.purchaseDetailRepository.save(
       purchaseDetailToUpdate,
@@ -163,8 +225,8 @@ export class PurchaseDetailService {
   }
 
   async remove(id: string) {
-    console.log(id);
     const purchaseDetailToRemove = await this.purchaseDetailRepository.findOne({
+      relations: ['id_purchase'],
       where: { id_purchase_detail: id },
     });
 
@@ -173,6 +235,27 @@ export class PurchaseDetailService {
         `El detalle de la compra con el id '${id}' no se encontró`,
         HttpStatus.NOT_FOUND,
       );
+    
+    //Validar si la compra existe.
+    const purchase = await this.purchaseRepository.findOne({
+      where: { id_purchase: purchaseDetailToRemove.id_purchase.id_purchase },
+    });
+
+    if (!purchase)
+      throw new HttpException(
+        `La compra con el id '${purchaseDetailToRemove.id_product}' no fue econtrado.`,
+        HttpStatus.NOT_FOUND,
+    );
+
+    var purTP = parseFloat(purchase.total_price)
+
+    purTP -= parseFloat(purchaseDetailToRemove.price)*purchaseDetailToRemove.units
+
+
+    purchase.total_price = purTP.toString()
+    
+    await this.purchaseRepository.save(purchase);
+
 
     await this.purchaseDetailRepository.softDelete(id);
 
