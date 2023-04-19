@@ -10,7 +10,6 @@ export class GetOnlySaleDto {
     id_sale: string;
 
     @Expose()
-    @Transform(({ value }) => parseFloat(value))
     total_cost: string;
 
     @Transform(({ value }) => plainToInstance(CustomerResponseSaleDto, value))

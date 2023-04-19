@@ -123,6 +123,7 @@ export class PurchaseService {
         'purchase_detail.received',
         'product.name',
         'product.color',
+        'product.size',
         'brand.id_brand',
         'brand.name',
         'category.id_category',

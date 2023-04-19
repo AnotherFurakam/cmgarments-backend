@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsString, IsUUID, Min, MinLength } from 'class-validator';
+import { IsNotEmpty, IsString, IsUUID, Max, Min, MinLength } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 export class CreatePurchaseDetailDto {
   @IsNotEmpty()
@@ -9,11 +9,11 @@ export class CreatePurchaseDetailDto {
   units: number;
 
   @IsNotEmpty()
-  @Min(0)
   @ApiProperty({
     description: 'Precio total de la compra',
+    type: String,
   })
-  price: number;
+  price: string;
 
   @IsNotEmpty()
   @IsString()

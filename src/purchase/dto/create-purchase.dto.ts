@@ -21,13 +21,6 @@ export class CreatePurchaseDto {
   description: string;
 
   @IsNotEmpty()
-  @Min(0)
-  @ApiProperty({
-    description: 'Precio total de la compra',
-  })
-  total_price: number;
-
-  @IsNotEmpty()
   @IsDate()
   @ApiProperty({
     description: 'Fecha de compra',

@@ -39,6 +39,8 @@ export class EntranceService {
       where: { id_purchase_detail: createEntranceDto.id_purchase_detail },
     });
 
+    console.log(purDetailExist)
+
     if (!purDetailExist)
       throw new HttpException(
         `El detalle '${createEntranceDto.id_purchase_detail}' no existe`,
@@ -61,6 +63,8 @@ export class EntranceService {
     entranceToRegist.purchase_detail = purDetailExist;
     const createEntrance = await this.entranceRepository.save(entranceToRegist);
 
+    console.log(entranceToRegist)
+
     purDetailExist.received = true;
     await this.purDetailRepository.save(purDetailExist);
 
@@ -74,8 +78,17 @@ export class EntranceService {
     const total = await this.entranceRepository.count();
     const pages = Math.ceil(total / limit);
 
+    if (total === 0) {
+      return {
+        totalPages: 0,
+        actualPage: 1,
+        nextPage: null,
+        prevPage: null,
+        data: [],
+      } as PaginationResponseDto<GetEntranceDto[]>;
+    }
+
     if (page > pages) {
-      if (total === 0) throw new BadRequestException('Aun no hay Entradas');
       throw new HttpException(
         `El número de página ${page} no existe.`,
         HttpStatus.BAD_REQUEST,
@@ -174,29 +187,41 @@ export class EntranceService {
   }
   //* Método para eliminar de forma lógica un producto (priduct)
   async remove(id: string) {
-    // //Buscamos el brand que queramos eliminar mediante su id
-    // const entranceToRemove = await this.entranceRepository.findOne({
-    //   relations: ['product', 'supplier'],
-    //   where: { id_entrance: id, delete_at: null },
-    // });
-    // const productExist = await this.productRepository.findOne({
-    //   where: { id_product: entranceToRemove.product.id_product },
-    // });
-    // if (!productExist)
-    //   throw new HttpException(
-    //     `El producto'${entranceToRemove.product.id_product}' no existe`,
-    //     HttpStatus.CONFLICT,
-    //   );
-    // productExist.stock = productExist.stock - entranceToRemove.units;
-    // await this.productRepository.save(productExist);
-    // // Si el producto no fue encontrado o su propiedad delete_at no es null devolvemos un error
-    // if (!entranceToRemove || entranceToRemove.delete_at != null)
-    //   throw new HttpException(
-    //     `La Entrada con el id '${id} no fue encontrado o ya fue removido.'`,
-    //     HttpStatus.NOT_FOUND,
-    //   );
-    // await this.entranceRepository.softDelete(id);
-    // //Retornamos los datos del producto registrado hacia el cliente
-    // return plainToInstance(GetEntranceDto, entranceToRemove);
-  }
+      const entranceToRemove = await this.entranceRepository.findOne({
+        relations: ['purchase_detail', 'purchase_detail.id_product'],
+        where: { id_entrance: id, delete_at: null },
+      });
+    
+    console.log(entranceToRemove)
+
+      if (!entranceToRemove || entranceToRemove.delete_at != null)
+        throw new HttpException(
+          `La Entrada con el id '${id} no fue encontrado o ya fue removido.'`,
+          HttpStatus.NOT_FOUND,
+        );
+        
+      console.log(entranceToRemove.purchase_detail)
+
+      const purchaseDetail = await this.purDetailRepository.findOne({
+        where: { id_purchase_detail: entranceToRemove.purchase_detail.id_purchase_detail },
+      });
+    
+      // Obteniendo el producto existente
+      const productExist = await this.productRepository.findOne({
+        relations: ['brand', 'category'],
+        where: { id_product: entranceToRemove.purchase_detail.id_product.id_product },
+      });
+    
+        // Actualizando el stock del producto
+        productExist.stock = productExist.stock - entranceToRemove.units;
+        await this.productRepository.save(productExist);
+
+        purchaseDetail.received = false
+        await this.purDetailRepository.save(purchaseDetail);
+      
+        await this.entranceRepository.softDelete(id);
+      
+        //Retornamos los datos del producto registrado hacia el cliente
+        return plainToInstance(GetEntranceDto, entranceToRemove);
+    }
 }

@@ -16,7 +16,7 @@ export class ProductSupplier {
     supplier: Supplier;
 
     @Column({ type: 'decimal', precision: 10, scale: 2 })
-    unit_cost: number;
+    unit_cost: string;
 
     @CreateDateColumn()
     create_at: Date;

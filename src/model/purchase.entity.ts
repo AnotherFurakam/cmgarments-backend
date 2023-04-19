@@ -26,8 +26,8 @@ export class Purchase {
   @Column({ type: 'varchar', length: 1000 })
   description: string;
 
-  @Column({ type: 'decimal', precision: 10, scale: 2 })
-  total_price: number;
+  @Column({ type: 'decimal', precision: 10, scale: 2, default: 0 })
+  total_price: string;
 
   @Column({ type: 'date', nullable: false })
   date_purchase: Date;

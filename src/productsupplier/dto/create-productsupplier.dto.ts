@@ -19,13 +19,9 @@ export class CreateProductSupplierDto {
     id_supplier: string;
 
     @IsNotEmpty()
-    @Min(0)
-    @Max(1000)
     @ApiProperty({
         description: 'Costo de precio unitario al registrar',
-        minimum: 0,
-        maximum: 1000,
-        type: Number,
+        type: String,
     })
-    unit_cost: number;
+    unit_cost: string;
 }

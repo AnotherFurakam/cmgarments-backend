@@ -18,8 +18,7 @@ export class GetProductDto {
   color: string;
 
   @Expose()
-  @Transform(({ value }) => parseFloat(value))
-  price: number;
+  price: string;
 
   @Expose()
   stock: number;

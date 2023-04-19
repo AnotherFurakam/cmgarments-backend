@@ -11,8 +11,7 @@ export class GetSaleDetailDto {
     units: number;
 
     @Expose()
-    @Transform(({ value }) => parseFloat(value))
-    price: number;
+    price: string;
 
     @Expose()
     is_delete: Boolean;
