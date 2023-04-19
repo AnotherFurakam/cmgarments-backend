@@ -98,7 +98,7 @@ export class EntranceService {
     const entranceList = await this.entranceRepository.find({
       skip: (page - 1) * limit,
       take: limit,
-      order: { create_at: 'ASC' },
+      order: { create_at: 'DESC' },
     });
 
     // const entranceList = await this.entranceRepository
