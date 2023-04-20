@@ -17,6 +17,8 @@ import { CloudinaryModule } from './cloudinary/cloudinary.module';
 import { ProductSupplierModule } from './productsupplier/productsupplier.module';
 import { AuthModule } from './auth/auth.module';
 import { SaleModule } from './sale/sale.module';
+import { CustomerModule } from './customer/customer.module';
+import { OutputModule } from './output/output.module';
 
 config();
 @Module({
@@ -45,6 +47,8 @@ config();
     CloudinaryModule,
     ProductSupplierModule,
     AuthModule,
+    CustomerModule,
+    OutputModule,
   ],
   controllers: [AppController],
   providers: [AppService],
