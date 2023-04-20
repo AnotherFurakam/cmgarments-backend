@@ -398,6 +398,7 @@ export class ProductService {
     try {
       resImg = await this.cloudinaryService.uploadImage(image);
     } catch (e) {
+      console.log(e);
       throw new BadRequestException('Tipo de archivo invalido');
     }
 
@@ -459,7 +460,7 @@ export class ProductService {
   async removeAllImage(id: string) {
     // verificar si el producto existe
     await this.findOne(id);
-  
+
     // obtener todas las imagenes
     const images = await this.imageRepository.find({
       where: {
@@ -468,7 +469,7 @@ export class ProductService {
         },
       },
     });
-  
+
     // Eliminar todas las imágenes relacionadas con el id del producto
     for (const image of images) {
       try {
@@ -481,10 +482,9 @@ export class ProductService {
         throw error;
       }
     }
-  
+
     return { message: `Imagenes del producto ${id} eliminadas.` };
   }
-  
 
   //? (GET) - Obtener cantidad de PRODUCTOS
   async getQuantity() {
@@ -613,7 +613,7 @@ export class ProductService {
   //* Función para obtener los productos recientes
   async getRecentsProducts(quantity: number): Promise<ProductImageDto[]> {
     const productos: Product[] = await this.productRepository.find({
-      where: {state: true},
+      where: { state: true },
       relations: ['images'],
       take: quantity,
       order: {
