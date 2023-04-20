@@ -17,18 +17,27 @@ import fs from 'fs';
 import { google } from 'googleapis';
 import pdfMake from "pdfmake/build/pdfmake";
 import pdfFonts from "pdfmake/build/vfs_fonts";
+import { Purchase_detail } from 'src/model/purchase_detail.entity';
+import { Entrance } from 'src/model/entrance.entity';
+import { CreateEntranceDto } from 'src/entrance/dto/create.entrance.dto';
+import { EntranceService } from 'src/entrance/entrance.service';
 pdfMake.vfs = pdfFonts.pdfMake ? pdfFonts.pdfMake.vfs : pdfFonts.vfs;
 
 @Injectable()
 export class SaleService {
     constructor(
+    @InjectRepository(Entrance)
+    private entranceRepository: Repository<Entrance>,
     @InjectRepository(Product) private productRepository: Repository<Product>,
     @InjectRepository(Sale) private saleRepository: Repository<Sale>,
+    @InjectRepository(Purchase_detail)
+    private purDetailRepository: Repository<Purchase_detail>,
     @InjectRepository(SaleDetail)
     private saledetailRepository: Repository<SaleDetail>,
     @InjectRepository(Customer)
     private customerRepository: Repository<Customer>,
     private readonly entityManager: EntityManager,
+    private readonly entranceService: EntranceService
 ) {}
     
     async create(createSaleDto: CreateSaleDto): Promise<GetSaleDto> {
@@ -370,9 +379,16 @@ export class SaleService {
     }
 
     async remove(id: string) {
+
+        const initialValuesE: CreateEntranceDto = {
+            description: "Devolución-",
+            units: 0,
+            unit_cost: 0,
+            id_purchase_detail: ""
+        };
         // Buscamos la venta que queremos eliminar mediante su id
         const saleToRemove = await this.saleRepository.findOne({
-        relations: ['sale_detail'],
+        relations: ['sale_detail', 'sale_detail.product'],
         where: { id_sale: id },
         });
     
@@ -382,15 +398,28 @@ export class SaleService {
             `La venta con el id '${id} no fue encontrada o ya fue removida.'`,
             HttpStatus.NOT_FOUND,
         );
-    
+
         // Actualizamos el estado is_delete de todos los detalles de venta relacionados a la venta
+        // Agregar entrada de devolucion y sumar el stock del producto
         await Promise.all(
         saleToRemove.sale_detail.map(async (detail) => {
-            detail.is_delete = true;
-            await this.saledetailRepository.save(detail);
-        })
+                detail.is_delete = true;
+                const productExist = await this.productRepository.findOne({
+                    relations: ['brand'],
+                    where: { id_product: detail.product.id_product },
+                });
+                
+                initialValuesE.description += productExist.name+"-"+productExist.size+"-"+productExist.brand.name
+                initialValuesE.id_purchase_detail = productExist.id_product+"l"
+                initialValuesE.unit_cost = parseFloat(detail.price)
+                initialValuesE.units = detail.units
+
+                await this.entranceService.create(initialValuesE)
+                await this.saledetailRepository.save(detail);
+                initialValuesE.description = "Devolución-"
+            })
         );
-    
+        
         // Actualizamos el estado is_delete de la venta a true
         saleToRemove.is_delete = true;
         await this.saleRepository.save(saleToRemove);

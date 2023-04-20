@@ -26,7 +26,7 @@ export class Entrance {
   @Column({ type: 'decimal', precision: 10, scale: 2 })
   unit_cost: number;
 
-  @ManyToOne(() => Purchase_detail, (pur) => pur.entrance)
+  @ManyToOne(() => Purchase_detail, (pur) => pur.entrance, { nullable: true })
   @JoinColumn({ name: 'id_purchase_detail' })
   purchase_detail: Purchase_detail;
 

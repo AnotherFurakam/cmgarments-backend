@@ -29,47 +29,86 @@ export class EntranceService {
     private purDetailRepository: Repository<Purchase_detail>,
     @InjectRepository(Supplier)
     private supplierRepository: Repository<Supplier>,
-  ) {}
+) {}
 
   //? (POST) Crear Entrada
-  async create(createEntranceDto: CreateEntranceDto) {
-    //obtener detalle compra
-    const purDetailExist = await this.purDetailRepository.findOne({
-      relations: ['id_product', 'id_purchase'],
-      where: { id_purchase_detail: createEntranceDto.id_purchase_detail },
-    });
+async create(createEntranceDto: CreateEntranceDto) {
 
+    function isValidUUID(uuid) {
+        const regex = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$/;
+        return regex.test(uuid);
+    }
+
+    var purDetailExist = null
+
+    if (isValidUUID(createEntranceDto.id_purchase_detail)) {
+        purDetailExist = await this.purDetailRepository.findOne({
+			relations: ['id_product', 'id_purchase'],
+			where: { id_purchase_detail: createEntranceDto.id_purchase_detail },
+        });
+    } else {
+        console.log("UUID inválido:", createEntranceDto.id_purchase_detail);
+        purDetailExist = null
+    }
+    
+    
     console.log(purDetailExist)
 
-    if (!purDetailExist)
+    if(!isValidUUID(createEntranceDto.id_purchase_detail)){
+          
+          const idProductWithoutLastDigit = createEntranceDto.id_purchase_detail.toString().slice(0, -1);
+
+          const productExist = await this.productRepository.findOne({
+            where: { id_product: idProductWithoutLastDigit },
+          });
+    
+          if (!productExist)
+            throw new HttpException(
+              `El producto '${idProductWithoutLastDigit}' no existe`,
+              HttpStatus.CONFLICT,
+          );
+          
+          createEntranceDto.id_purchase_detail = null
+
+          productExist.stock = productExist.stock + createEntranceDto.units;
+          await this.productRepository.save(productExist);
+
+    }
+    else if (!purDetailExist)
       throw new HttpException(
         `El detalle '${createEntranceDto.id_purchase_detail}' no existe`,
         HttpStatus.CONFLICT,
-      );
+    );
+    else{
+         //obtener producto
+        const productExist = await this.productRepository.findOne({
+          where: { id_product: purDetailExist.id_product.id_product },
+        });
 
-    //obtener producto
-    const productExist = await this.productRepository.findOne({
-      where: { id_product: purDetailExist.id_product.id_product },
-    });
+        if (!productExist)
+          throw new HttpException(
+            `El producto '${purDetailExist.id_product.id_product}' no existe`,
+            HttpStatus.CONFLICT,
+          );
 
-    if (!productExist)
-      throw new HttpException(
-        `El producto '${purDetailExist.id_product.id_product}' no existe`,
-        HttpStatus.CONFLICT,
-      );
-
+          productExist.stock = productExist.stock + createEntranceDto.units;
+          await this.productRepository.save(productExist);
+    }
+    
+    
+    
     //ya se crea la entrada y se guarda en la database
     const entranceToRegist = this.entranceRepository.create(createEntranceDto);
-    entranceToRegist.purchase_detail = purDetailExist;
+    if(!isValidUUID(createEntranceDto.id_purchase_detail)){
+      entranceToRegist.purchase_detail = null;
+    }
+    else{
+      entranceToRegist.purchase_detail = purDetailExist;
+      purDetailExist.received = true;
+      await this.purDetailRepository.save(purDetailExist);
+    }
+
     const createEntrance = await this.entranceRepository.save(entranceToRegist);
-
-    console.log(entranceToRegist)
-
-    purDetailExist.received = true;
-    await this.purDetailRepository.save(purDetailExist);
-
-    productExist.stock = productExist.stock + createEntranceDto.units;
-    await this.productRepository.save(productExist);
 
     return plainToInstance(GetEntranceDto, createEntrance);
   }
@@ -192,34 +231,41 @@ export class EntranceService {
         where: { id_entrance: id, delete_at: null },
       });
     
-    console.log(entranceToRemove)
-
       if (!entranceToRemove || entranceToRemove.delete_at != null)
         throw new HttpException(
           `La Entrada con el id '${id} no fue encontrado o ya fue removido.'`,
           HttpStatus.NOT_FOUND,
-        );
-        
-      console.log(entranceToRemove.purchase_detail)
+        );      
 
-      const purchaseDetail = await this.purDetailRepository.findOne({
-        where: { id_purchase_detail: entranceToRemove.purchase_detail.id_purchase_detail },
-      });
-    
-      // Obteniendo el producto existente
-      const productExist = await this.productRepository.findOne({
-        relations: ['brand', 'category'],
-        where: { id_product: entranceToRemove.purchase_detail.id_product.id_product },
-      });
-    
+      try {
+        const purchaseDetail = await this.purDetailRepository.findOne({
+          where: { id_purchase_detail: entranceToRemove.purchase_detail.id_purchase_detail },
+        });
+         // Obteniendo el producto existente
+        const productExist = await this.productRepository.findOne({
+          relations: ['brand', 'category'],
+          where: { id_product: entranceToRemove.purchase_detail.id_product.id_product },
+        });
+      
         // Actualizando el stock del producto
         productExist.stock = productExist.stock - entranceToRemove.units;
         await this.productRepository.save(productExist);
 
+        console.log("LOLLL", purchaseDetail)
+
         purchaseDetail.received = false
+
+        console.log("LOLLL", purchaseDetail)
         await this.purDetailRepository.save(purchaseDetail);
       
         await this.entranceRepository.softDelete(id);
+      } catch (error) {
+        throw new HttpException(
+            `La devoluciones no se pueden eliminar`,
+            HttpStatus.BAD_REQUEST, 
+        );
+        
+      }
       
         //Retornamos los datos del producto registrado hacia el cliente
         return plainToInstance(GetEntranceDto, entranceToRemove);
